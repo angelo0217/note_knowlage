@@ -38,6 +38,9 @@ cat > /etc/docker/daemon.json <<EOF
   "storage-driver": "overlay2"
 }
 ```
+## 訪問容器
+- docker run --rm -it <image name> /bin/bash
+- docker exec -it mysql-test /bin/sh
 ## 常用
 ### consul 
 ```sh
