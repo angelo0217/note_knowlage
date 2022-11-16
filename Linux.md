@@ -53,3 +53,16 @@ sudo systemctl status yum-cron.service
 # Edit download_updates = yes to no
 vim /etc/yum/yum-cron.conf
 ```
+# SSH key
+- ssh-keygen -t rsa -b 2048 -C 'comment' -f $HOME/.ssh/id_rsa -N ''
+- 路徑會產生再 ~/.ssh
+### openssh for git
+- ssh-keygen -t rsa -b 2048 -C 'comment' -f D:\qsf\gcp\ssh\id_rsa -N ''
+- id_rsa.pub內容  完整貼上gitlab
+### RSA for jenkins
+- ssh-keygen -m PEM  -t rsa -b 2048 -C 'comment' -f D:\qsf\gcp\ssh\id_rsa
+- id_rsa 貼上jenins  ssh type  not username pwd
+### 服務間ssh連線
+- 將產生工鑰放進鑰連線的機器
+- vi ~/.ssh/authorized_keys
+- id_rsa.pub 內容貼上
