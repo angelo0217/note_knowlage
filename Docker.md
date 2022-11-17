@@ -128,39 +128,3 @@ docker run --name local-mq -p 5672:5672 -p 15672:15672 --restart=always -d rabbi
 ```sh
 docker run -d -p 9000:9000 --restart=always --name portainer -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer
 ```
-## local-vm compose yaml
-```
-version: "3.7"
-services:
-  qsfmq:
-    image: rabbitmq:3.8.3-management
-    restart: always
-    ports:
-      - 5672:5672
-      - 15672:15672
-  qsf-consul:
-    image: consul:1.7.3
-    hostname: qsf-consul
-    restart: always
-    ports:
-      - '8300:8300'
-      - '8301:8301'
-      - '8301:8301/udp'
-      - '8500:8500'
-      - '8600:8600'
-      - '8600:8600/udp'
-    command: [ "agent", "-data-dir=/tmp/consul", "-server", "-ui", "-bootstrap", "-datacenter=dc1", "-client=0.0.0.0", "-bind={{ GetInterfaceIP \"eth0\" }}", "-node=server1"]
-    networks:
-       - byfn
-  qsf-redis:
-    image: "redis:5.0.8-alpine"
-    restart: always
-    ports:
-      - "6379:6379"
-    networks:
-      - byfn
-networks:
-  byfn:
-    name: byfn
-    driver: overlay
-```
