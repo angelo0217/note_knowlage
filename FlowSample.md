@@ -1,5 +1,5 @@
 # Flow
-參考 https://ithelp.ithome.com.tw/articles/10234553
+原文 https://ithelp.ithome.com.tw/articles/10234553
 ```mermaid
 pie
 title code language
@@ -20,14 +20,14 @@ graph TB
 ```
 ```mermaid
 sequenceDiagram
-  Alice->>John: Hello John, how are you?
+  A Srvice->>B Srvice: get b service data
   loop Healthcheck
-      John->>John: Fight against hypochondria
+      B Srvice->>B Srvice: polling check
   end
-  Note right of John: Rational thoughts!
-  John-->>Alice: Great!
-  John->>Bob: How about you?
-  Bob-->>John: Jolly good!
+  Note right of B Srvice: Rational thoughts!
+  B Srvice-->>Redis: get cache
+  B Srvice->>DB: get user 1
+  DB-->>B Srvice: return user
 ```
 ```mermaid
 classDiagram
