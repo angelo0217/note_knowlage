@@ -1,9 +1,9 @@
 # Docker
 ## install
 ```shell
-sudo yum install -y yum-utils   device-mapper-persistent-data   lvm2
+sudo yum install -y yum-utils device-mapper-persistent-data lvm2
 
-sudo yum-config-manager   --add-repo   https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 sudo yum list docker-ce --showduplicates | sort -r #查看版本
 sudo yum install -y docker-ce-19.03.9-3.el7 #選擇stable版
 
