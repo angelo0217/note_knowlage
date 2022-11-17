@@ -26,23 +26,23 @@
 - 6:info
 - 7:debug
 ## 範例
-```
-	sudo journalctl -p 4 --since 2020-05-29 --until 2020-06-01
-	journalctl -p 4 --since 2020-09-02 --until 2020-09-04
-    journalctl -p 7 --since "2021-10-08 12:18:00" --until "2021-10-08 12:20:00"
-    journalctl -p 6 --since 2020-06-09 --until 2020-06-10
+```shell
+sudo journalctl -p 4 --since 2020-05-29 --until 2020-06-01
+journalctl -p 4 --since 2020-09-02 --until 2020-09-04
+journalctl -p 7 --since "2021-10-08 12:18:00" --until "2021-10-08 12:20:00"
+journalctl -p 6 --since 2020-06-09 --until 2020-06-10
 ```
 # 刪除PID
 - ps aux | grep yum
 - kill -9 *
 # 系統排程
 - tail -f /var/log/cron
-```sh
+```shell
 centOs 突發cpu暴漲問題
 https://blog.csdn.net/weixin_43380635/article/details/91457330
 ```
 # centOs7 關閉update
-```
+```shell
 centOs7 關閉update	https://www.itread01.com/content/1511606312.html
 https://www.qiuvps.com/1188.html
 sudo service yum-cron start
@@ -67,7 +67,7 @@ vim /etc/yum/yum-cron.conf
 - vi ~/.ssh/authorized_keys
 - id_rsa.pub 內容貼上
 # 多檔搜尋 GREP
-```
+```shell
 在 /etc/*.conf 中搜尋 Centos 關鍵字
 grep Centos /etc/*.conf
 篩選含有 Centos 關鍵字的檔案名稱
@@ -84,7 +84,7 @@ ls /etc/ | grep Centos
 - grep -r Centos /etc/
 - 在 /etc/ 下所有檔案中搜尋 Centos
 ## 顯示前後幾行
-```
+```shell
 # 多顯示後一行
 grep -A 1 Centos /etc/test
 
@@ -95,7 +95,7 @@ grep -B 1 Centos /etc/test
 grep -C 1 Centos /etc/test
 ```
 ## 正規表示法
-```
+```shell
 # a 開頭
 ls | grep "^a"
 

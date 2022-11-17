@@ -2,7 +2,7 @@
 ## 版本
 - https://github.com/docker/compose/releases
 ## install
-```sh
+```shell
 # Install Compose on Linux systems
 curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
     -o /usr/local/bin/docker-compose
@@ -15,18 +15,18 @@ groupadd docker
 gpasswd -a ${MANAGER_USER} docker
 ```
 ## 啟動 compose file
-```
+```shell
 docker-compose -f docker-compose.yml up -d
 ```
 ## 執行多個compose file
-```sh
+```shell
 docker-compose \
     -f docker-compose.yml \
     -f docker-compose.override.yml \
     up
 ```
 ## local-vm compose yaml
-```
+```shell
 version: "3.7"
 services:
   qsfmq:
@@ -62,7 +62,7 @@ networks:
     driver: overlay
 ```
 ## nginx sample
-```
+```shell
 version: "3.7"
 services:
    nginx:
@@ -85,7 +85,7 @@ services:
        # 左邊主機，右邊容器
 ```
 ## mysql
-```
+```shell
 version: '3.7'
 services:
   mysql:

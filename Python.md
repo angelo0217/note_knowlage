@@ -40,3 +40,85 @@ def main2():
     print(future.result(timeout=1))
     print('用时共： %s second' % (time.time() - start_time))
 ```
+## local queue
+```python
+from queue import PriorityQueue
+
+
+class PriorityQueueWithKey(PriorityQueue):
+    def __init__(self, key=None, maxsize=0):
+        super().__init__(maxsize)
+        self.key = key
+
+    def put(self, item):
+        if self.key is None:
+            super().put((item, item))
+        else:
+            super().put((self.key(item), item))
+
+    def get(self):
+        return super().get(self.queue)[1]
+
+
+class Job(object):
+    def __init__(self, priority, description):
+        self.priority = priority
+        self.description = description
+        print('New Job', description)
+        return
+    def __lt__(self, other):
+        return self.priority > other.priorit
+
+if __name__ == '__main__':
+    a = PriorityQueueWithKey(abs)
+    a.put(-4)
+    a.put(-3)
+    print(*a.queue)
+
+    print(a.get())
+
+    print(*a.queue)
+
+    q2 = PriorityQueue();
+    q2.put(Job(5, 'ddd'))
+    q2.put(Job(10, 'ccc'))
+    q2.put(Job(1, 'aaa'))
+
+    while not q2.empty():
+        nextJob = q2.get()
+        print('get job:', nextJob.priority)
+
+```
+## mocked
+```python
+from unittest.mock import patch, MagicMock
+
+mocked_session = MagicMock()
+# boto3 need to project path
+with patch.object(
+        boto3, "Session", return_value=mocked_session
+    ) as mocked_session:
+    mocked_session.return_value.resource.return_value.Table.return_value.get_item.return_value = {
+            "Item": None
+        }
+
+with patch.object(
+        boto3, "Session", side_effect=RuntimeError("test")
+    ) as mocked_session:
+    mocked_session.return_value.resource.return_value.Table.return_value.get_item.side_effect=RuntimeError("test")
+```
+## sample2
+```python
+@patch("xxxx.yyy.zzz.ClassName")
+def test_error(
+    mocked_class,
+    client,
+    headers_with_empty_body,
+):
+    mocked_class.return_value.publish.side_effect = RuntimeError("xxx")
+    # mocked_class.return_value.publish.side_effect = function_name
+    url = "/xxxx/xxxx"
+    resp = client.post(url, headers=headers_with_empty_body, json={})
+
+    assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+```
