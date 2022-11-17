@@ -34,8 +34,8 @@ classDiagram
   Class01 <|-- AveryLongClass : Cool
   <<interface>> Class01
   Class09 --> C2 : Where am i?
-  Class09 --* C3
-  Class09 --|> Class07
+  Class09 --* C3 : extend
+  Class09 --|> Class07 : implement
   Class07 : equals()
   Class07 : Object[] elementData
   Class01 : size()
