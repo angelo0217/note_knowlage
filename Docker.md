@@ -1,6 +1,6 @@
 # Docker
 ## install
-```sh
+```shell
 sudo yum install -y yum-utils   device-mapper-persistent-data   lvm2
 
 sudo yum-config-manager   --add-repo   https://download.docker.com/linux/centos/docker-ce.repo
@@ -35,7 +35,7 @@ sudo systemctl start docker
 sudo systemctl stop docker
 ```
 ## uninstall
-```sh
+```shell
 systemctl stop docker
 
 # Clean docker 
@@ -70,7 +70,7 @@ yes | sudo yum remove docker \
 - https://docs.docker.com/engine/reference/commandline/stats/
 ## systemctl
 ### 擴大空間
-```sh
+```shell
 cat > /etc/docker/daemon.json <<EOF
 {
   "log-driver": "json-file",
@@ -83,7 +83,7 @@ cat > /etc/docker/daemon.json <<EOF
   ]
 }
 ```
-``` sh
+```shell
 {
   "debug": true,
   "experimental": true,
@@ -103,7 +103,7 @@ cat > /etc/docker/daemon.json <<EOF
 - docker exec -it mysql-test /bin/sh
 ## 常用
 ### consul 
-```sh
+```shell
 docker run -d --name=server1 --restart=always \
              -p 8300:8300 \
              -p 8301:8301 \
@@ -117,14 +117,14 @@ docker run -d --name=server1 --restart=always \
              -data-dir=/tmp/data-dir -client 0.0.0.0 -ui -node=server1
 ```
 ### Redis
-```sh
+```shell
 docker run --name redis-lab -p 6379:6379 -d redis
 ```
 ### Mq
-```sh
+```shell
 docker run --name local-mq -p 5672:5672 -p 15672:15672 --restart=always -d rabbitmq:3.8.3-management
 ```
 ### portainer
-```sh
+```shell
 docker run -d -p 9000:9000 --restart=always --name portainer -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer
 ```

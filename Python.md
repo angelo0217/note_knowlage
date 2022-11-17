@@ -1,11 +1,15 @@
 # Python
+
 ## List Partition
+
 ```python
 sample_list = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 n = 3
 p_list = [sample_list[i:i + n] for i in range(0, len(sample_list), n)]
 ```
+
 ## current thread
+
 ```python
 from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 import os, time
@@ -40,7 +44,9 @@ def main2():
     print(future.result(timeout=1))
     print('用时共： %s second' % (time.time() - start_time))
 ```
+
 ## local queue
+
 ```python
 from queue import PriorityQueue
 
@@ -66,8 +72,10 @@ class Job(object):
         self.description = description
         print('New Job', description)
         return
+
     def __lt__(self, other):
         return self.priority > other.priorit
+
 
 if __name__ == '__main__':
     a = PriorityQueueWithKey(abs)
@@ -89,35 +97,42 @@ if __name__ == '__main__':
         print('get job:', nextJob.priority)
 
 ```
+
 ## mocked
+
 ```python
 from unittest.mock import patch, MagicMock
+
 import boto3
 
 mocked_session = MagicMock()
 # boto3 need to project path
 with patch.object(
         boto3, "Session", return_value=mocked_session
-    ) as mocked_session:
+) as mocked_session:
     mocked_session.return_value.resource.return_value.Table.return_value.get_item.return_value = {
-            "Item": None
-        }
+        "Item": None
+    }
 
 with patch.object(
         boto3, "Session", side_effect=RuntimeError("test")
-    ) as mocked_session:
-    mocked_session.return_value.resource.return_value.Table.return_value.get_item.side_effect=RuntimeError("test")
+) as mocked_session:
+    mocked_session.return_value.resource.return_value.Table.return_value.get_item.side_effect = RuntimeError(
+        "test")
 ```
+
 ## sample2
+
 ```python
 from unittest.mock import patch
 from http import HTTPStatus
 
+
 @patch("xxxx.yyy.zzz.ClassName")
 def test_error(
-    mocked_class,
-    client,
-    headers,
+        mocked_class,
+        client,
+        headers,
 ):
     mocked_class.return_value.publish.side_effect = RuntimeError("xxx")
     # mocked_class.return_value.publish.side_effect = function_name
