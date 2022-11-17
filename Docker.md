@@ -1,4 +1,64 @@
 # Docker
+## install
+```sh
+sudo yum install -y yum-utils   device-mapper-persistent-data   lvm2
+
+sudo yum-config-manager   --add-repo   https://download.docker.com/linux/centos/docker-ce.repo
+sudo yum list docker-ce --showduplicates | sort -r #查看版本
+sudo yum install -y docker-ce-19.03.9-3.el7 #選擇stable版
+
+sudo systemctl enable docker
+
+# 安裝有延遲問題，可能導致daemon.json尚未建立。
+# Update (Docker Server) 自定義daemon.json 
+cat > /etc/docker/daemon.json <<EOF
+{
+  "exec-opts": ["native.cgroupdriver=systemd"],
+  "log-driver": "json-file",
+  "log-opts": {
+    "max-size": "100m",
+    "max-file": "10"
+  },
+  "storage-driver": "overlay2"
+}
+EOF
+mkdir -p /etc/systemd/system/docker.service.d
+
+# Restart docker
+systemctl daemon-reload
+systemctl restart docker
+systemctl enable docker.service
+
+# 啟動 
+sudo systemctl start docker
+# 關閉
+sudo systemctl stop docker
+```
+## uninstall
+```sh
+systemctl stop docker
+
+# Clean docker 
+yes | sudo docker system prune --all --volumes
+
+rm -rf /var/lib/docker /etc/docker
+rm -rf /var/run/docker.sock
+rm -rf /usr/bin/docker-compose
+
+# Uninstall old versions
+yes | sudo yum remove docker \
+    docker-client \
+    docker-client-latest \
+    docker-common \
+    docker-latest \
+    docker-latest-logrotate \
+    docker-logrotate \
+    docker-engine \
+    docker-ce \
+    docker-ce-cli 
+```
+## 設定root以外user，使用docker指令
+- sudo usermod -a -G docker albert
 ## Volumn 預設位置
 - /var/lib/docker/volumes
 ## 取IP
