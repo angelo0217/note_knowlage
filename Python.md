@@ -92,6 +92,7 @@ if __name__ == '__main__':
 ## mocked
 ```python
 from unittest.mock import patch, MagicMock
+import boto3
 
 mocked_session = MagicMock()
 # boto3 need to project path
@@ -109,16 +110,19 @@ with patch.object(
 ```
 ## sample2
 ```python
+from unittest.mock import patch
+from http import HTTPStatus
+
 @patch("xxxx.yyy.zzz.ClassName")
 def test_error(
     mocked_class,
     client,
-    headers_with_empty_body,
+    headers,
 ):
     mocked_class.return_value.publish.side_effect = RuntimeError("xxx")
     # mocked_class.return_value.publish.side_effect = function_name
     url = "/xxxx/xxxx"
-    resp = client.post(url, headers=headers_with_empty_body, json={})
+    resp = client.post(url, headers=headers, json={})
 
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 ```
