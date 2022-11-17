@@ -66,3 +66,45 @@ vim /etc/yum/yum-cron.conf
 - 將產生工鑰放進鑰連線的機器
 - vi ~/.ssh/authorized_keys
 - id_rsa.pub 內容貼上
+# 多檔搜尋 GREP
+```
+在 /etc/*.conf 中搜尋 Centos 關鍵字
+grep Centos /etc/*.conf
+篩選含有 Centos 關鍵字的檔案名稱
+ls /etc/ | grep Centos
+```
+## 忽略大小寫
+- grep -i Centos /etc/test
+## 標示行號
+- grep -v Centos /etc/test
+## 反向匹配
+- grep -v Centos /etc/test
+- 只顯示出沒有關鍵字的那幾行資料
+## 遞迴搜尋檔案
+- grep -r Centos /etc/
+- 在 /etc/ 下所有檔案中搜尋 Centos
+## 顯示前後幾行
+```
+# 多顯示後一行
+grep -A 1 Centos /etc/test
+
+# 多顯示前一行
+grep -B 1 Centos /etc/test
+
+# 多顯示前後各一行
+grep -C 1 Centos /etc/test
+```
+## 正規表示法
+```
+# a 開頭
+ls | grep "^a"
+
+# b 結尾
+ls | grep "b$"
+
+# a 或 b 開頭
+ls | grep "^[ab]"
+
+# a 或 b 結尾
+ls | grep "[ab]$"
+```
