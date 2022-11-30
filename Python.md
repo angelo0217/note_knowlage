@@ -141,3 +141,14 @@ def test_error(
 
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 ```
+
+## sample3
+```python
+@pytest.mark.parametrize(
+    "http_code",
+    [
+        (HTTPStatus.BAD_REQUEST),
+        (HTTPStatus.OK),
+    ],
+)
+```
