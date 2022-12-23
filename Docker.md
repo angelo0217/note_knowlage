@@ -99,8 +99,8 @@ cat > /etc/docker/daemon.json <<EOF
 }
 ```
 ## 訪問容器
-- docker run --rm -it <image name> /bin/bash
-- docker exec -it mysql-test /bin/sh
+- docker run --rm -it $image_name /bin/bash
+- docker exec -it $container_name /bin/sh
 ## 常用
 ### consul 
 ```shell

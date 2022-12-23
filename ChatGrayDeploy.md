@@ -4,7 +4,7 @@ sequenceDiagram
   new Chat->> consul: regiester
   consul -->> nginx: new tag
   nginx->>nginx: switch to new tag
-  client(H5 Mobile)->> nginx: http connection to new Chat
+  client(H5 Mobile)->> nginx: http request to new Chat
     Note right of nginx: http request redirect to new chat!
   new Chat->> message queue: new tag put in queue
   message queue -->> old chat: listener to change new tag
