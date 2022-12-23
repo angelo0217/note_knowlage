@@ -26,7 +26,9 @@ sequenceDiagram
       B Srvice->>B Srvice: polling check
   end
   Note right of B Srvice: Rational thoughts!
+  B Srvice-xRedis: get cache
   B Srvice-->>Redis: get cache
+  Redis ->> Redis: return
   B Srvice->>DB: get user 1
   DB-->>B Srvice: return user
 ```
