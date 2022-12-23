@@ -60,7 +60,7 @@ centOs 突發cpu暴漲問題
 https://blog.csdn.net/weixin_43380635/article/details/91457330
 ```
 
-# centOs7 關閉update
+# CentOs7 關閉update
 
 ```shell
 centOs7 關閉update	https://www.itread01.com/content/1511606312.html

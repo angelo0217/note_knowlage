@@ -97,9 +97,11 @@ if __name__ == '__main__':
         print('get job:', nextJob.priority)
 
 ```
-
-## mocked
-
+## partition split
+```python
+partition_list = [object_list[i : i + 10000] for i in range(0, len(object_list), 10000)]
+```
+## mocked sample 
 ```python
 from unittest.mock import patch, MagicMock
 
@@ -120,9 +122,6 @@ with patch.object(
     mocked_session.return_value.resource.return_value.Table.return_value.get_item.side_effect = RuntimeError(
         "test")
 ```
-
-## sample2
-
 ```python
 from unittest.mock import patch
 from http import HTTPStatus
@@ -141,8 +140,6 @@ def test_error(
 
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
 ```
-
-## sample3
 ```python
 @pytest.mark.parametrize(
     "http_code",
@@ -151,4 +148,19 @@ def test_error(
         (HTTPStatus.OK),
     ],
 )
+```
+```python
+@pytest.fixture
+def mocked_send_message():
+    session = MagicMock()
+    with patch.object(xxxx.ccc.sss, "Session", return_value=session):
+        client = session.client()
+        yield client.send_message
+
+def test_xxxx(mocked_send_message, track_session):
+    mocked_send_message.assert_called()
+```
+```python
+with pytest.raises(Exception):
+    xxxx()
 ```
