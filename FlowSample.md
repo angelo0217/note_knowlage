@@ -1,6 +1,8 @@
 # Flow
+
 原文 https://ithelp.ithome.com.tw/articles/10234553
 https://mermaid-js.github.io/mermaid/#/
+
 ```mermaid
 pie
 title code language
@@ -8,6 +10,7 @@ title code language
 "Python" : 40
 "C#" : 10
 ```
+
 ```mermaid
 graph TB
     Start --> Open
@@ -19,6 +22,7 @@ graph TB
     GetName --> Adam
     Adam --> register
 ```
+
 ```mermaid
 sequenceDiagram
   A Srvice->>B Srvice: get b service data
@@ -31,7 +35,15 @@ sequenceDiagram
   Redis ->> Redis: return
   B Srvice->>DB: get user 1
   DB-->>B Srvice: return user
+  par 123
+    B Srvice ->> B Srvice : A
+  and
+    B Srvice ->> B Srvice : B
+  and
+    B Srvice ->> B Srvice : C
+  end
 ```
+
 ```mermaid
 classDiagram
   Class01 <|-- AveryLongClass : Cool
