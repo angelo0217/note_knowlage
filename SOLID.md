@@ -313,6 +313,7 @@ public class Company {
 ```
 
 #合成/聚合覆用原则（Composite/Aggregate Reuse Principle，CARP）
+[參考](https://ithelp.ithome.com.tw/articles/10236782)
 ## Bad
 ```mermaid
 classDiagram
@@ -331,4 +332,54 @@ classDiagram
   Color <|-- Black
   Color <|-- White
   Car *-- Color : aggregate
+```
+``` javascript
+interface Color {  // 抽出來建立介面
+      void kind();
+}
+abstract class Car {
+     Color color;  // 做合成
+     abstract void run();
+     public Color getColor() {
+        return color;
+     }
+     public void setColor(Color color) {
+        this.color = color;
+     }
+}
+
+class ElectricCar extends Car {
+    @Override
+    void run() {
+        System.out.println("電動車");
+    }
+}
+class PetrolCar extends Car {
+    @Override
+    void run() {
+        System.out.println("汽油車");
+    }
+}
+class White implements Color{
+    @Override
+    public void kind() {
+        System.out.println("白色");
+    }
+}
+class Black implements Color{
+    @Override
+    public void kind() {
+        System.out.println("黑色");
+    }
+}
+
+public class MyCar {
+    public static void main(String args[]) {
+        ElectricCar electricCar = new ElectricCar();
+        White color = new White();
+        electricCar.setColor(color);
+        electricCar.getColor().kind();
+        electricCar.run();
+    }
+}
 ```
