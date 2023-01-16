@@ -102,6 +102,14 @@ vim /etc/yum/yum-cron.conf
 grep Centos /etc/*.conf
 篩選含有 Centos 關鍵字的檔案名稱
 ls /etc/ | grep Centos
+
+遞迴搜尋檔案
+grep -r Centos /etc/
+在 /etc/ 下所有檔案中搜尋 Centos
+grep -r --include="*.conf" Centos /etc/
+
+
+grep -r --include="*.py" --exclude="test_*" -o -n -i -E '(aaa|bbb)' ./
 ```
 
 ## 忽略大小寫
@@ -116,11 +124,6 @@ ls /etc/ | grep Centos
 
 - grep -v Centos /etc/test
 - 只顯示出沒有關鍵字的那幾行資料
-
-## 遞迴搜尋檔案
-
-- grep -r Centos /etc/
-- 在 /etc/ 下所有檔案中搜尋 Centos
 
 ## 顯示前後幾行
 

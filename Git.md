@@ -27,3 +27,9 @@ git push -f  # 更新遠端
 git tag -a v2.1.0
 git push origin v2.1.0
 ```
+
+##還原
+還原目標在備份倉，執行下面指令
+```
+git push --mirror {new_repository_path}
+```
