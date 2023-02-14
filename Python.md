@@ -1,4 +1,18 @@
 # Python
+## install
+```shell
+安裝 python windows 版
+
+power shell 執行，安裝poetry
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | py -
+
+env
+PYTHON_HOME: D:\tool\python3.9.10
+path添加
+  %PYTHON_HOME%
+  poetry 位置，已安裝時提供為主
+  C:\Users\g02117\AppData\Roaming\Python\Scripts
+```
 
 ## List Partition
 
