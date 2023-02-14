@@ -9,16 +9,14 @@ env path，新增該路徑
 @ECHO OFF
 start "" "C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Notepad++"
 ```
-#mysql
+#[mysql](https://dev.mysql.com/downloads/mysql/)
 ```shell
-https://dev.mysql.com/downloads/mysql/
 下載 Windows (x86, 64-bit), ZIP Archive 解壓縮
 path add
 D:\mysql-8.0.29-winx64\bin
 ```
-# sqlite
+# [sqlite](https://www.sqlite.org/download.html)
 ```shell
-https://www.sqlite.org/download.html
 下載
 Precompiled Binaries for Windows
   sqlite-dll-win64-x64-3400100.zip

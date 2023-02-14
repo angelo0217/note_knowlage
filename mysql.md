@@ -1,3 +1,18 @@
+docker-compose
+```yaml
+version: '3.7'
+services:
+  mysql:
+    image: mysql:5.7.41
+    container_name: mysql
+    command: mysqld --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - '3306:3306'
+    environment:
+      #      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: Java1234!
+      MYSQL_DATABASE: mydb
+```
 ```sql
 CREATE DATABASE test_db;
 ```
