@@ -25,11 +25,12 @@ GRANT ALL PRIVILEGES ON DATABASE test_db TO dean;
 ```
 
 #[Schema](https://www.runoob.com/postgresql/postgresql-schema.html)
+##[vs other db](https://blog.51cto.com/u_15078930/5497154)
 ```sql
 create schema my_schema
 
-CREATE TABLE "my_schema".COMPANY3(
-   ID INT PRIMARY KEY     NOT NULL,
+CREATE TABLE "my_schema".COMPANY(
+   ID SERIAL PRIMARY KEY NOT NULL,
    NAME           TEXT    NOT NULL,
    AGE            INT     NOT NULL,
    ADDRESS        CHAR(50),
@@ -47,12 +48,56 @@ GRANT ALL ON ALL TABLES IN SCHEMA my_schema TO mydb;
 GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA schema_a TO dean;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA my_schema TO mydb;
 ```
-
+# [auto increment](https://www.runoob.com/postgresql/postgresql-autoincrement.html)
+|類型| 存儲大小 |       範圍       |
+| :-----|-----: |:--------------:|
+|SMALLSERIAL | 2字節 |   1 - 32,767    |
+|SERIAL | 4字節 | 1 - 2,147,483,647 |
+|BIGSERIAL | 4字節 | 1 - 922,337,2036,854,775,807  |
+```sql
+CREATE TABLE "my_schema".COMPANY(
+   ID SERIAL PRIMARY KEY NOT NULL,
+   NAME           TEXT    NOT NULL,
+   AGE            INT     NOT NULL,
+   ADDRESS        CHAR(50),
+   SALARY         REAL
+);
+```
 #[cross db search](https://docs.aiven.io/docs/products/postgresql/howto/use-dblink-extension)
 ```sql
 CREATE EXTENSION IF NOT EXISTS dblink;
 
 select dblink_connect('mydblink','hostaddr=127.0.0.1 port=5432 dbname=test_db user=mydb password=1qaz2wsx')
 
-SELECT * FROM  dblink('hostaddr=127.0.0.1 port=5432 dbname=test_db user=mydb password=1qaz2wsx', 'select * from company2') AS company2(id int, name text, age int, address char, salary real)
+SELECT * FROM  dblink('hostaddr=127.0.0.1 port=5432 dbname=test_db user=mydb password=1qaz2wsx', 'select * from company2') AS 
+    company2(id int, name text, age int, address char, salary real)
+```
+
+# [materialized-views](https://docs.postgresql.tw/server-programming/the-rule-system/materialized-views)
+## [sample](https://www.postgresqltutorial.com/postgresql-views/postgresql-materialized-views/)
+```sql
+CREATE MATERIALIZED VIEW member_view AS
+select
+    p.id,
+    c.id as company_id,
+    p.name,
+    c.name as company_name,
+    p.age,
+    c.LOCATION
+from
+    person p
+    left join dblink(
+        'hostaddr=127.0.0.1 port=5432 dbname=test_db user=mydb password=1qaz2wsx',
+        'select * from company'
+    ) AS c(
+        id int,
+        name text,
+        LOCATION VARCHAR(20),
+        address varchar(50)
+    ) on c.id = p.company_id;
+    
+REFRESH MATERIALIZED VIEW view_name;
+
+CREATE UNIQUE INDEX member_view_uidx ON member_view (id);
+REFRESH MATERIALIZED VIEW CONCURRENTLY view_name;
 ```
