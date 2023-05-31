@@ -8,12 +8,16 @@
 
 ```shell
 # Install Compose on Linux systems
-curl -L "https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-$(uname -s)-$(uname -m)" \
-    -o /usr/local/bin/docker-compose
-
-# Apply executable permissions to the binary
+yum install -y wget
+cd /usr/local/bin
+wget https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64
+yes | mv docker-compose-Linux-x86_64 docker-compose
 chmod +x /usr/local/bin/docker-compose
+chmod 755 docker-compose
+#連結快捷指令
 ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
+
+docker swarm init
 
 groupadd docker
 gpasswd -a ${MANAGER_USER} docker
@@ -39,15 +43,15 @@ docker-compose \
 ```shell
 version: "3.7"
 services:
-  qsfmq:
-    image: rabbitmq:3.8.3-management
+  dean-mq:
+    image: rabbitmq:3.11.7-management
     restart: always
     ports:
       - 5672:5672
       - 15672:15672
-  qsf-consul:
-    image: consul:1.7.3
-    hostname: qsf-consul
+  dean-consul:
+    image: consul:1.13.1
+    hostname: dean-consul
     restart: always
     ports:
       - '8300:8300'
@@ -59,8 +63,8 @@ services:
     command: [ "agent", "-data-dir=/tmp/consul", "-server", "-ui", "-bootstrap", "-datacenter=dc1", "-client=0.0.0.0", "-bind={{ GetInterfaceIP \"eth0\" }}", "-node=server1"]
     networks:
        - byfn
-  qsf-redis:
-    image: "redis:5.0.8-alpine"
+  dean-redis:
+    image: "redis:7.0-alpine"
     restart: always
     ports:
       - "6379:6379"
