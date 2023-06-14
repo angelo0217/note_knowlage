@@ -172,7 +172,18 @@ def mocked_send_message():
         client = session.client()
         yield client.send_message
 
-def test_xxxx(mocked_send_message, track_session):
+        
+@pytest.fixture
+def mocked_some_function():
+    with patch.object(
+        aaa.bbb.ccc,
+        "xx_funct",
+    ) as some_function:
+        some_function.return_value = "test.com"
+        yield some_function
+
+
+def test_xxxx(mocked_send_message, mocked_some_function, session):
     mocked_send_message.assert_called()
 ```
 ```python
