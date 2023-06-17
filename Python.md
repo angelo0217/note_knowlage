@@ -154,6 +154,15 @@ def test_error(
     resp = client.post(url, headers=headers, json={})
 
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@patch.object(XXXXClass, "cccFunc")
+def test_post_coverages_400(
+    mocked_func
+):
+    mocked_func.return_value = 85
+    req_body = mocked_create_coverage_body
+    .....
 ```
 ```python
 @pytest.mark.parametrize(
