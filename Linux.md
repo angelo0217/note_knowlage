@@ -1,3 +1,18 @@
+# 首次安裝開啟網卡
+vim /etc/sysconfig/network-scripts/ifcfg-eth0
+```shell
+ONBOOT=yes
+```
+```shell
+yum install -y net-tools
+```
+
+# 安裝ssh
+```shell
+yum –y install openssh-server openssh-clients
+systemctl start sshd
+systemctl status sshd
+```
 # 查硬碟空間
 
 - df -l -h  >>  overlay 查看
