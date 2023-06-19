@@ -38,6 +38,16 @@ systemctl status sshd
     - 2 寫
 -
     - 1 執行
+第一个数字（7）代表所有者的权限。它具有最高级别的权限。
+
+7 表示读取（r，4）+写入（w，2）+执行（x，1）的权限。换句话说，所有者可以读取、写入和执行该文件或目录。
+第二个数字（7）代表与文件或目录相关的用户组的权限。
+
+7 表示读取（r，4）+写入（w，2）+执行（x，1）的权限。用户组成员可以读取、写入和执行该文件或目录。
+第三个数字（7）代表其他用户（非所有者和非用户组成员）的权限。
+
+7 表示读取（r，4）+写入（w，2）+执行（x，1）的权限。其他用户可以读取、写入和执行该文件或目录。
+这种权限设置（777）会授予所有用户对文件或目录的最高权限，包括读取、写入和执行。请注意，使用这种权限设置可能会对系统的安全性造成风险，因为它允许任何用户都可以访问和修改文件或目录。在实际使用中，应根据实际需求设置适当的权限。
 
 # linux 系統log
 
@@ -95,21 +105,23 @@ vim /etc/yum/yum-cron.conf
 - 路徑會產生再 ~/.ssh
 
 ### openssh for git
-
 - ssh-keygen -t rsa -b 2048 -C 'comment' -f D:\qsf\gcp\ssh\id_rsa -N ''
 - id_rsa.pub內容 完整貼上gitlab
 
 ### RSA for jenkins
-
 - ssh-keygen -m PEM -t rsa -b 2048 -C 'comment' -f D:\qsf\gcp\ssh\id_rsa
 - id_rsa 貼上jenins ssh type not username pwd
 
 ### 服務間ssh連線
-
-- 將產生工鑰放進鑰連線的機器
+- 將產生公鑰放進鑰連線的機器
 - vi ~/.ssh/authorized_keys
 - id_rsa.pub 內容貼上
 
+### 設定連線 github
+id_rsa.pub 複製到 github 的 SSH Keys 設定頁面
+id_rsa 保留在 ~/.ssh/內，一般為 /{user_name}/.ssh/id_rsa
+chmod 400 ~/.ssh/id_rsa
+就可以clone
 # 多檔搜尋 GREP
 
 ```shell
