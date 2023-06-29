@@ -70,6 +70,18 @@ services:
       - "6379:6379"
     networks:
       - byfn
+  mysql:
+    image: mysql:8.0.25
+    container_name: mysql
+    command: mysqld --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    ports:
+      - '3306:3306'
+    environment:
+      #      MYSQL_USER: root
+      MYSQL_ROOT_PASSWORD: Java1234!
+      MYSQL_DATABASE: mydb
+    networks:
+      - byfn
 networks:
   byfn:
     name: byfn
