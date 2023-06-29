@@ -154,6 +154,15 @@ def test_error(
     resp = client.post(url, headers=headers, json={})
 
     assert resp.status_code == HTTPStatus.INTERNAL_SERVER_ERROR
+
+
+@patch.object(XXXXClass, "cccFunc")
+def test_post_coverages_400(
+    mocked_func
+):
+    mocked_func.return_value = 85
+    req_body = mocked_create_coverage_body
+    .....
 ```
 ```python
 @pytest.mark.parametrize(
@@ -172,7 +181,18 @@ def mocked_send_message():
         client = session.client()
         yield client.send_message
 
-def test_xxxx(mocked_send_message, track_session):
+        
+@pytest.fixture
+def mocked_some_function():
+    with patch.object(
+        aaa.bbb.ccc,
+        "xx_funct",
+    ) as some_function:
+        some_function.return_value = "test.com"
+        yield some_function
+
+
+def test_xxxx(mocked_send_message, mocked_some_function, session):
     mocked_send_message.assert_called()
 ```
 ```python
