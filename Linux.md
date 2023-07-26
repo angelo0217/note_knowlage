@@ -24,6 +24,10 @@ systemctl status sshd
 - yum -y install ntp
 - ntpdate time.stdtime.gov.tw
 
+# 修改查詢時區
+- timedatectl
+- timedatectl set-timezone Asia/Taipei
+
 # 網卡順序
 
 - ip addr
