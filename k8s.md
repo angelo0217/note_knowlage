@@ -187,10 +187,13 @@ vi kube-flannel.yml # 調整 Network 等於上面
 #    }
     
 kubectl apply -f kube-flannel.yml
-
+#calico 會自行調整內容，無須調整
 kubectl apply -f calico.yaml
 watch kubectl get pods -n calico-system
-
+```
+# 修正 open /run/flannel/subnet.env: no such file or directory
+# [參考](https://www.jianshu.com/p/9819a9f5dda0)
+```shell
 # 檢查是否有下面的env file
 vi /run/flannel/subnet.env
 #輸入以下要對其上面的network
