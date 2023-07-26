@@ -190,6 +190,14 @@ kubectl apply -f kube-flannel.yml
 
 kubectl apply -f calico.yaml
 watch kubectl get pods -n calico-system
+
+# 檢查是否有下面的env file
+vi /run/flannel/subnet.env
+#輸入以下要對其上面的network
+FLANNEL_NETWORK=10.244.0.0/16
+FLANNEL_SUBNET=10.244.0.1/24
+FLANNEL_MTU=1450
+FLANNEL_IPMASQ=true
 ```
 # create namespace
 ```shell
@@ -261,7 +269,7 @@ kubectl logs <pod-name> -c <container-name> -n <namespace>
 kubectl logs nginx-deployment -c nginx-deployment-565887c86b-bnwvw -n fz-k8s
 
 kubectl get pods -n fz-k8s
-kubectl describe pod nginx-deployment-565887c86b-hf5xf -n fz-k8s
+kubectl describe pod nginx-deployment-565887c86b-hsvxj -n fz-k8s
 kubectl get events -n fz-k8s
 ```
 enp0s3
