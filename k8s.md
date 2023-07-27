@@ -73,18 +73,7 @@ sudo sed -i "s#SystemdCgroup = false#SystemdCgroup = true#g" /etc/containerd/con
 systemctl start containerd.service
 systemctl status containerd.service
 ```
-##将桥接的 IPv4 流量传递到 iptables 的链
-```shell
-cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
-net.bridge.bridge-nf-call-iptables  = 1
-net.bridge.bridge-nf-call-ip6tables = 1
-net.ipv4.ip_forward                 = 1
-EOF
 
-sudo sysctl --system
-modprobe br_netfilter
-echo 1 > /proc/sys/net/ipv4/ip_forward
-```
 ##Configure Kubernetes Repository
 ```shell
 cat <<EOF > /etc/yum.repos.d/kubernetes.repo
@@ -106,13 +95,17 @@ systemctl daemon-reload
 systemctl enable kubelet
 systemctl start kubelet
 ```
-#Update Iptables Settings
+##将桥接的 IPv4 流量传递到 iptables 的链
 ```shell
-cat <<EOF > /etc/sysctl.d/k8s.conf
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
 net.bridge.bridge-nf-call-ip6tables = 1
-net.bridge.bridge-nf-call-iptables = 1
+net.ipv4.ip_forward                 = 1
 EOF
-sysctl --system
+
+sudo sysctl --system
+modprobe br_netfilter
+echo 1 > /proc/sys/net/ipv4/ip_forward
 ```
 
 # Network
@@ -165,7 +158,10 @@ kubeadm join 192.168.19.135:6443 --token i7w5xr.u3t483h07aksnzg6 \
 	--discovery-token-ca-cert-hash sha256:04defa4d856cb5bcfe7ad0c3f2d71aa7d48e6c27e4e5821336db00c1e4bf7464
 ```
 # fix NetworkReady = False [參考](https://ithelp.ithome.com.tw/m/articles/10295266)
+## 第一種 kube-flannel.yml
 ```shell
+#查看各節點狀態
+kubectl describe nodes
 # 查看 cidr
 kubectl cluster-info dump | grep -m 1 cluster-cidr
 #會看到類似   "--cluster-cidr=192.168.0.0/16",
@@ -187,9 +183,6 @@ vi kube-flannel.yml # 調整 Network 等於上面
 #    }
     
 kubectl apply -f kube-flannel.yml
-#calico 會自行調整內容，無須調整
-kubectl apply -f calico.yaml
-watch kubectl get pods -n calico-system
 ```
 # 修正 open /run/flannel/subnet.env: no such file or directory
 # [參考](https://www.jianshu.com/p/9819a9f5dda0)
@@ -202,11 +195,18 @@ FLANNEL_SUBNET=10.244.0.1/24
 FLANNEL_MTU=1450
 FLANNEL_IPMASQ=true
 ```
+## 第二種 calico
+```shell
+#calico 會自行調整內容，無須調整
+kubectl apply -f calico.yaml
+watch kubectl get pods -n calico-system
+```
+
 # create namespace
 ```shell
 kubectl create namespace fz-k8s
 ```
-#test nginx [參考] (https://www.cnblogs.com/Fzeng/p/17288286.html) 
+#test nginx [參考](https://www.cnblogs.com/Fzeng/p/17288286.html) 
 ```shell
 cat > nginx.yaml << EOF
 # 创建命名空间  ：kubectl create namespace fz-k8s
