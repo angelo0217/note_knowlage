@@ -1,0 +1,109 @@
+#在 Kubernetes 中，Deployment 是一個控制器（Controller）的類型，用來確保指定的 Pod 在集群中按照所需的副本數目運行。
+#Deployment 的主要目的是提供一種機制，讓你能夠方便地管理 Pod 的副本數目，以及在進行應用程式的更新或回滾時確保平滑過渡。它是 Kubernetes 最常用的一種控制器之一。
+#Deployment 的主要特點包括：
+#  副本數目控制：你可以指定 Deployment 要運行的 Pod 的副本數目，Kubernetes 會自動確保這些 Pod 的副本數目保持一致。
+#  滾動更新：當你更改了 Deployment 的 Pod 模板（例如映像版本或容器配置），Deployment 會自動進行滾動更新，逐步替換過時的 Pod，確保應用程式平滑升級而不影響可用性。
+#  回滾機制：如果更新引入了問題，你可以使用回滾功能將 Deployment 回退到之前的狀態，恢復正常運作。
+#  維護版本控制：Deployment 會自動保持指定數量的歷史版本，讓你可以方便地進行回滾操作。
+#  自動修復：如果某個 Pod 發生故障或被刪除，Deployment 會自動檢測並重新創建新的 Pod，確保指定的副本數量不變。
+#Deployment 是一個抽象層，它控制 Pod 的生命週期，讓你能夠專注於應用程式的描述，而不需擔心底層的運行和管理細節。這使得在 Kubernetes 上運行應用程式更為靈活且容易管理。
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: fz-k8s
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.23.2
+        ports:
+        - containerPort: 80
+#Deployment 區段：port 映射，這裡將容器的 80 port 對應到 Kubernetes 中的 port，使得外部可以通過 Kubernetes Service 訪問該容器的服務
+#apiVersion: 指定使用的 Kubernetes API 版本，這裡使用了 apps/v1 版本。
+#kind: 資源的種類，這裡是一個 Deployment。
+#metadata: 定義 Deployment 物件的元資料。
+#name: Deployment 物件的名稱，這裡是 "nginx-deployment"。
+#namespace: Deployment 所屬的命名空間，這裡是 "fz-k8s"。
+#spec: 定義了 Deployment 的規格。
+#replicas: 指定希望運行的 Pod 個數，這裡設置為 2，表示希望有兩個相同的 Pod 在運行。
+#selector: 用來選擇屬於這個 Deployment 的 Pod。在這裡，它使用了 matchLabels 來選擇具有 "app: nginx" 標籤的 Pod。
+#template: 定義了要創建的 Pod 的規格。
+#metadata: 定義了 Pod 物件的元資料，也就是 Pod 的標籤。
+#labels: 這裡指定了 Pod 的標籤為 "app: nginx"，與上面 Deployment 的 selector 搭配，確保這些 Pod 被視為屬於 Deployment。
+#spec: 定義了 Pod 內容的規格。
+#containers: 定義了要運行在 Pod 內的容器清單。
+#name: 容器的名稱，這裡是 "nginx"。
+#image: 指定容器要使用的 Docker 映像，這裡是 "nginx:1.23.2"。
+#ports: 定義容器的 。
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-service
+  namespace: fz-k8s
+spec:
+  ports:
+    - nodePort: 30080
+      port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: nginx
+  type: NodePort
+Service 區段：
+
+#apiVersion: 指定使用的 Kubernetes API 版本，這裡使用了 v1 版本。
+#kind: 資源的種類，這裡是一個 Service。
+#metadata: 定義 Service 物件的元資料。
+#name: Service 物件的名稱，這裡是 "nginx-service"。
+#namespace: Service 所屬的命名空間，這裡是 "fz-k8s"。
+#spec: 定義了 Service 的規格。
+#ports: 定義 Service 的 port 映射。
+#nodePort: 指定 NodePort 服務類型的節點 port，這裡是 30080。
+#port: 定義 Service 的 port，這裡是 80。
+#protocol: 定義 Service 的通信協定，這裡是 TCP。
+#targetPort: 定義 Service 連接到 Pod 的目標 port，這裡是 80。
+#selector: 用來選擇應該連接到 Service 的 Pod。在這裡，它使用了 app: nginx 標籤來選擇具有相同標籤的 Pod。
+---
+
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: byfn
+  namespace: fz-k8s
+spec:
+  podSelector:
+    matchLabels:
+      app: nginx
+  ingress:
+    - from:
+      - podSelector: {}
+  egress:
+    - to:
+      - podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+NetworkPolicy 區段：
+
+#apiVersion: 指定使用的 Kubernetes API 版本，這裡使用了 networking.k8s.io/v1 版本。
+#kind: 資源的種類，這裡是一個 NetworkPolicy。
+#metadata: 定義 NetworkPolicy 物件的元資料。
+#name: NetworkPolicy 物件的名稱，這裡是 "byfn"。
+#namespace: NetworkPolicy 所屬的命名空間，這裡是 "fz-k8s"。
+#spec: 定義了 NetworkPolicy 的規格。
+#podSelector: 定義了 NetworkPolicy 適用的 Pod 標籤選擇器。在這裡，它使用了 app: nginx 標籤來選擇符合條件的 Pod。
+#ingress: 定義了允許進入選擇的 Pod 的流量。這裡使用 from.podSelector 來指定所有 Pod 都可以與這些被選擇的 Pod 進行通信。
+#egress: 定義了允許離開選擇的 Pod 的流量。這裡使用 to.podSelector 來指定所有 Pod 都可以被這些被選擇的 Pod 訪問。
+#policyTypes: 定義了這個 NetworkPolicy 的規則類型，這裡指定了 Ingress 和 Egress 兩種類型。這表示該 NetworkPolicy 將適用於進入和離開這些被選擇的 Pod 的流量。
