@@ -122,9 +122,12 @@ vim /etc/yum/yum-cron.conf
 - id_rsa.pub 內容貼上
 
 ### 設定連線 github
-id_rsa.pub 複製到 github 的 SSH Keys 設定頁面
-id_rsa 保留在 ~/.ssh/內，一般為 /{user_name}/.ssh/id_rsa
+
+```shell
+#id_rsa.pub 複製到 github 的 SSH Keys 設定頁面
+#id_rsa 保留在 ~/.ssh/內，一般為 /{user_name}/.ssh/id_rsa
 chmod 400 ~/.ssh/id_rsa
+```
 就可以clone
 # 多檔搜尋 GREP
 
