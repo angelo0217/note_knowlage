@@ -206,6 +206,8 @@ kubectl get pods -A
 ```shell
 kubectl create namespace fz-k8s
 ```
+#NodePort 
+ - 端口范围是 30000 到 32767
 #test nginx [參考](https://www.cnblogs.com/Fzeng/p/17288286.html) 
 ```shell
 cat > nginx.yaml << EOF
@@ -293,6 +295,7 @@ mv  linux-amd64/helm  /usr/local/bin/helm
 helm version
 ```
 #Dashboard
+## 暫時放著，因為沒有token的問題，還找不到解法
 ```shell
 wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
 
