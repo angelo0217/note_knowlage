@@ -108,7 +108,7 @@ modprobe br_netfilter
 echo 1 > /proc/sys/net/ipv4/ip_forward
 ```
 
-# Network
+
 ## Create Cluster with kubeadm - master [參考](https://blog.frognew.com/2023/01/kubeadm-install-kubernetes-1.26.html)
 ```shell
 cat > /opt/config.yaml <<EOF
@@ -140,7 +140,7 @@ kind: KubeProxyConfiguration
 mode: ipvs
 EOF
 
-kubeadm init --config=/opt/config.yaml --ignore-preflight-errors=all 
+kubeadm init --config=/opt/config.yaml --ignore-preflight-errors=all
 
 echo "export KUBECONFIG=/etc/kubernetes/admin.conf" >> ~/.bash_profile
 source ~/.bash_profile
@@ -157,7 +157,7 @@ kubeadm token create --print-join-command
 kubeadm join 192.168.19.135:6443 --token i7w5xr.u3t483h07aksnzg6 \
 	--discovery-token-ca-cert-hash sha256:04defa4d856cb5bcfe7ad0c3f2d71aa7d48e6c27e4e5821336db00c1e4bf7464
 ```
-# fix NetworkReady = False [參考](https://ithelp.ithome.com.tw/m/articles/10295266)
+# Network [參考](https://ithelp.ithome.com.tw/m/articles/10295266)
 ## 第一種 kube-flannel.yml
 ```shell
 #查看各節點狀態
@@ -184,8 +184,7 @@ vi kube-flannel.yml # 調整 Network 等於上面
     
 kubectl apply -f kube-flannel.yml
 ```
-# 修正 open /run/flannel/subnet.env: no such file or directory
-# [參考](https://www.jianshu.com/p/9819a9f5dda0)
+### 修正 open /run/flannel/subnet.env: no such file or directory[參考](https://www.jianshu.com/p/9819a9f5dda0)
 ```shell
 # 檢查是否有下面的env file
 vi /run/flannel/subnet.env
@@ -197,9 +196,10 @@ FLANNEL_IPMASQ=true
 ```
 ## 第二種 calico
 ```shell
+wget https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/calico.yaml
 #calico 會自行調整內容，無須調整
 kubectl apply -f calico.yaml
-watch kubectl get pods -n calico-system
+kubectl get pods -A
 ```
 
 # create namespace
@@ -267,12 +267,81 @@ kubectl get deployment -n fz-k8s
 #查看所有節點
 kubectl describe nodes
 
-查看容器log
+#查看容器log
 kubectl logs <pod-name> -c <container-name> -n <namespace>
 kubectl logs nginx-deployment -c nginx-deployment-565887c86b-bnwvw -n fz-k8s
+
+
+kubectl describe pod <pod-name> -n <namespace>
 
 kubectl get pods -n fz-k8s
 kubectl describe pod nginx-deployment-565887c86b-hsvxj -n fz-k8s
 kubectl get events -n fz-k8s
+# 查看 pod 跟 容器名稱
+kubectl get pods --all-namespaces -o custom-columns="NAMESPACE:.metadata.namespace,POD:.metadata.name,CONTAINERS:.spec.containers[*].name"
+
+kubectl describe pod calico-kube-controllers-5f94594857-555vz -n kube-system
+
 ```
-enp0s3
+# helm
+```shell
+mkdir myhelm
+cd myhelm
+curl -SLO https://get.helm.sh/helm-v3.12.2-linux-amd64.tar.gz
+tar -zxvf helm-v3.12.2-linux-amd64.tar.gz
+mv  linux-amd64/helm  /usr/local/bin/helm
+helm version
+```
+#Dashboard
+```shell
+wget https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+
+vi recommended.yaml change to NodePort
+#kind: Service
+#apiVersion: v1
+#metadata:
+#  labels:
+#    k8s-app: kubernetes-dashboard
+#  name: kubernetes-dashboard
+#  namespace: kubernetes-dashboard
+#spec:
+#  ports:
+#    - port: 443
+#      targetPort: 8443
+#  selector:
+#    k8s-app: kubernetes-dashboard
+#  type: NodePort
+#查看 dashboard port
+
+kubectl apply -f recommended.yaml
+kubectl get svc --all-namespaces
+# create service account
+kubectl create sa cluster-admin-aa -n kubernetes-dashboard
+
+cat > /opt/cluster-admin-aa.yaml <<EOF
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: cluster-admin-binding
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: cluster-admin-aa
+  namespace: kubernetes-dashboard
+EOF
+
+kubectl create -f /opt/cluster-admin-aa.yaml
+
+kubectl get sa cluster-admin-aa -n kubernetes-dashboard -o=yaml
+
+kubectl describe serviceaccount default -n kubernetes-dashboard
+
+# edit to NodePort
+```
