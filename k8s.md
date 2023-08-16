@@ -272,6 +272,9 @@ kubectl describe nodes
 #查看容器log
 kubectl logs <pod-name> -c <container-name> -n <namespace>
 kubectl logs nginx-deployment -c nginx-deployment-565887c86b-bnwvw -n fz-k8s
+kubectl logs POD_NAME -c demo-mysql
+訪問容器
+kubectl exec -it POD_NAME -c demo-mysql -- /bin/bash
 
 
 kubectl describe pod <pod-name> -n <namespace>
