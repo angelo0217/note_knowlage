@@ -273,8 +273,9 @@ kubectl describe nodes
 kubectl logs <pod-name> -c <container-name> -n <namespace>
 kubectl logs nginx-deployment -c nginx-deployment-565887c86b-bnwvw -n fz-k8s
 kubectl logs POD_NAME -c demo-mysql
-訪問容器
+#訪問容器
 kubectl exec -it POD_NAME -c demo-mysql -- /bin/bash
+kubectl exec -it <your-pod-name>  -n <your-namespace>  -- /bin/sh
 
 
 kubectl describe pod <pod-name> -n <namespace>
@@ -351,3 +352,4 @@ kubectl describe serviceaccount default -n kubernetes-dashboard
 
 # edit to NodePort
 ```
+# [job sample](https://medium.com/swlh/how-to-run-locally-built-docker-images-in-kubernetes-b28fbc32cc1d)
