@@ -128,3 +128,7 @@ docker run --name local-mq -p 5672:5672 -p 15672:15672 --restart=always -d rabbi
 ```shell
 docker run -d -p 9000:9000 --restart=always --name portainer -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer
 ```
+#save image for Containerd
+```shell
+docker save -o demo-spring.tar demo-spring:0.0.1
+```
