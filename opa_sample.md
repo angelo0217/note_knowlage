@@ -2,7 +2,7 @@
 ## 以下實作[參考](https://blog.wu-boy.com/2021/05/comunicate-with-open-policy-agent-using-resful-api/)
 ### docker 啟動
 ```shell
-sudo docker run -p 8181:8181 openpolicyagent/opa:0.55.0 run --server --log-level debug -d
+sudo docker run -p 8181:8181 openpolicyagent/opa:0.55.0 run --server --log-level debug
 ```
 ### data.json
 ```json
@@ -82,19 +82,21 @@ curl --request PUT \
   --url http://localhost:8181/v1/data/sample/auth/acl \
   --header 'Content-Type: application/json' \
   --header 'User-Agent: Insomnia/2023.5.3' \
-  --data @dada.json
+  --data @data.json
 ```
 ### policy.rego
 ```rego
-package rbac.authz
+package sample.auth
 
-import data.rbac.authz.acl
+import data.sample.auth.acl
 import input
 
 # logic that implements RBAC.
 default allow = false
 
 allow {
+	input.method = "POST"
+
     # lookup the list of roles for the user
     roles := acl.group_roles[input.user[_]]
 
@@ -109,6 +111,47 @@ allow {
 
     # check if the permission granted to r matches the user's request
     p == {"action": input.action, "object": input.object}
+}
+```
+### policy.rego customer response
+```rego
+package sample.auth
+import input.attributes.request.http as http_request
+import data.sample.auth.acl
+import input
+
+default request_path = ""
+request_path = http_request.path
+
+allow = response {
+    input.method = "POST"
+	# lookup the list of roles for the user
+    roles := acl.group_roles[input.user[_]]
+
+    # for each role in that list
+    r := roles[_]
+
+    # lookup the permissions list for role r
+    permissions := acl.role_permissions[r]
+
+    # for each permission
+    p := permissions[_]
+
+    # check if the permission granted to r matches the user's request
+    p == {"action": input.action, "object": input.object}
+    response := {
+        "allowed": true,
+        "headers": {"x-ext-auth-allow": "yes"},
+		"body": {"policy": p, "permissions": permissions}
+    }
+} else = {
+    "allowed": false,
+    "headers": {"x-ext-auth-allow": "no"},
+    "body": {
+      "message": "Unauthorized Request",
+      "path": request_path
+    },
+    "http_status": 301
 }
 ```
 #### upload
@@ -129,9 +172,10 @@ curl --request POST \
   --header 'User-Agent: Insomnia/2023.5.5' \
   --data '{
   "input": {
-    "user": ["design_group_kpi_editor", "system_group_kpi_editor"],
+    "user": ["design_group_kpi_editor"],
     "action": "edit",
-    "object": "design"
+    "object": "design",
+	"method": "POST"
   }
 }'
 ```
