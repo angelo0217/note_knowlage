@@ -72,6 +72,9 @@ sudo docker run -p 8181:8181 openpolicyagent/opa:0.55.0 run --server --log-level
       {"action": "view_all", "object": "system"}
     ],
     "viewer_limit_m": [{"action": "view_l3_project", "object": "manufacture"}]
+  }, 
+  "policy_setting": {
+	  "design_group_kpi_editor": ["123", "456"]
   }
 }
 ```
@@ -139,10 +142,13 @@ allow = response {
 
     # check if the permission granted to r matches the user's request
     p == {"action": input.action, "object": input.object}
+	
+	policy := acl.policy_setting[input.user[_]]
+	
     response := {
         "allowed": true,
         "headers": {"x-ext-auth-allow": "yes"},
-		"body": {"policy": p, "permissions": permissions}
+		"body": {"permission": p, "permissions": permissions, "policy_data": policy}
     }
 } else = {
     "allowed": false,
