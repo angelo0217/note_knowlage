@@ -2,7 +2,7 @@
 ## 以下實作[參考](https://blog.wu-boy.com/2021/05/comunicate-with-open-policy-agent-using-resful-api/)
 ### docker 啟動
 ```shell
-sudo docker run -p 8181:8181 openpolicyagent/opa:0.55.0 run --server --log-level debug
+sudo docker run -d -p 8181:8181 openpolicyagent/opa:0.55.0 run --server --log-level debug
 ```
 ### data.json
 ```json
@@ -156,6 +156,20 @@ allow = response {
     "body": {
       "message": "Unauthorized Request",
       "path": request_path
+    },
+    "http_status": 301
+}
+
+group = response {
+    roles := acl.group_roles[input.user[_]]
+    response := {
+        "headers": {"x-ext-auth-allow": "yes"},
+		"body": {"group": roles}
+    }
+} else = {
+    "headers": {"x-ext-auth-allow": "no"},
+    "body": {
+      "message": "Grooup Not Found",
     },
     "http_status": 301
 }
