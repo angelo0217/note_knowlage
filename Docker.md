@@ -122,6 +122,9 @@ cat > /etc/docker/daemon.json <<EOF
 - docker run --rm -it $image_name /bin/bash
 - docker exec -it $container_name /bin/sh
 
+## 顯示容器使用資源
+- docker ps -q | xargs docker stats
+
 ## 常用
 
 ### consul
