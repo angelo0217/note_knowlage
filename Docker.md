@@ -166,6 +166,10 @@ docker run -d -p 9000:9000 --restart=always --name portainer -v /var/run/docker.
 ```shell
 docker save -o demo-spring.tar demo-spring:0.0.1
 ```
+# 完整重建
+```shell
+ docker-compose -f install.yml down --volumes --remove-orphans && docker-compose -f install.yml up -d --build
+```
 
 # Docker [備忘錄](https://mp.weixin.qq.com/s/iquAB8g5zyb8A2ReiQ3RSQ)
 

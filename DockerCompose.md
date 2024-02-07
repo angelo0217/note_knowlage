@@ -80,8 +80,14 @@ services:
       #      MYSQL_USER: root
       MYSQL_ROOT_PASSWORD: Java1234!
       MYSQL_DATABASE: mydb
+    volumes:
+      - mysql_data:/var/lib/mysql
     networks:
       - byfn
+      
+volumes:
+  mysql_data:
+#  位置 /var/lib/docker/volumes
 networks:
   byfn:
     name: byfn
