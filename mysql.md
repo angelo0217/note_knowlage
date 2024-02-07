@@ -105,3 +105,125 @@ if __name__ == "__main__":
     main()
 
 ```
+
+#Cluster[參考](https://cloud.tencent.com/developer/article/2171401)
+##主 docker-compose
+``` yaml
+version: "3.7"
+services:
+  mysql-master:
+    image: mysql:8.0.25
+    container_name: mysql-master
+    deploy:
+      placement:
+        constraints: [node.labels.mysqlMaster == true]
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_ROOT_PASSWORD: Java1234!
+    command:
+      - mysqld
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --lower_case_table_names=1
+      - --server_id=1
+      - --binlog-do-db=mydb
+      - --log-bin=mysql-bin
+      - --sync_binlog=1
+    networks:
+      - mysql-cluster-byfn
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  mysql-cluster-byfn:
+    driver: bridge
+```
+##從 docker-compose
+``` yaml
+version: "3.7"
+services:
+  mysql-slave:
+    image: mysql:8.0.25
+    container_name: mysql-slave
+    deploy:
+      placement:
+        constraints: [node.labels.mysqlSlave == true]
+      replicas: 1
+      restart_policy:
+        condition: on-failure
+        delay: 10s
+        max_attempts: 3
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: mydb
+      MYSQL_ROOT_PASSWORD: Java1234!
+      MYSQL_MASTER_HOST: mysql-master
+      MYSQL_MASTER_PORT: 3306
+      MYSQL_MASTER_USER: root
+      MYSQL_MASTER_PASSWORD: Java1234!
+    command:
+      - mysqld
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --lower_case_table_names=1
+      - --binlog-do-db=mydb
+      - --server_id=2
+      - --log-bin=mysql-bin
+      - --sync_binlog=1
+      - --replicate-do-db=mydb
+    networks:
+      - mysql-net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+networks:
+  mysql-net:
+    name: opt_mysql-cluster-byfn
+    external: true
+```
+
+##主從設定
+```
+主上面跑 
+mysql -uroot -pJava1234!
+CREATE USER 'slave2'@'%' IDENTIFIED WITH sha256_password BY'Password';
+GRANT REPLICATION SLAVE ON *.* TO 'slave2'@'%';
+flush privileges;
+
+show master status;
+查看 file 跟 position
+
+從上面跑
+mysql -uroot -pJava1234!
+STOP SLAVE IO_THREAD;
+CHANGE MASTER TO MASTER_HOST='mysql-master',
+MASTER_USER='slave2',
+MASTER_PASSWORD='Password',
+MASTER_PORT=3306, 
+MASTER_LOG_FILE='{主的file}',MASTER_LOG_POS={主的position};
+
+stop 從
+restart 主
+start 從
+
+進從簡查
+mysql -uroot -pJava1234!
+show slave status\G
+
+下面狀態要都是yse，若非則有問題
+Slave_IO_Running: Yes
+Slave_SQL_Running: Yes
+```
