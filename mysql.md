@@ -136,6 +136,7 @@ services:
       - --binlog-do-db=mydb
       - --log-bin=mysql-bin
       - --sync_binlog=1
+      - --expire_logs_days = 7
     networks:
       - mysql-cluster-byfn
     logging:
@@ -168,10 +169,6 @@ services:
     environment:
       MYSQL_DATABASE: mydb
       MYSQL_ROOT_PASSWORD: Java1234!
-      MYSQL_MASTER_HOST: mysql-master
-      MYSQL_MASTER_PORT: 3306
-      MYSQL_MASTER_USER: root
-      MYSQL_MASTER_PASSWORD: Java1234!
     command:
       - mysqld
       - --character-set-server=utf8mb4
@@ -216,7 +213,7 @@ MASTER_PORT=3306,
 MASTER_LOG_FILE='{主的file}',MASTER_LOG_POS={主的position};
 
 stop 從
-restart 主
+restart 主 --似乎可省略
 start 從
 
 進從簡查
