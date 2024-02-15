@@ -137,6 +137,8 @@ services:
       - --log-bin=mysql-bin
       - --sync_binlog=1
       - --expire_logs_days = 7
+      - --binlog_row_metadata=FULL
+      - --binlog_row_image=FULL
     networks:
       - mysql-cluster-byfn
     logging:
@@ -179,6 +181,8 @@ services:
       - --log-bin=mysql-bin
       - --sync_binlog=1
       - --replicate-do-db=mydb
+      - --binlog_row_metadata=FULL
+      - --binlog_row_image=FULL
     networks:
       - mysql-net
     logging:
@@ -220,8 +224,9 @@ MASTER_PASSWORD='Password',
 MASTER_PORT=3306, 
 MASTER_LOG_FILE='{主的file}',MASTER_LOG_POS={主的position};
 
+start slave;
+
 stop 從
-restart 主 --似乎可省略
 start 從
 
 進從簡查
