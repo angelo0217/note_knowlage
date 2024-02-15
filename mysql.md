@@ -196,6 +196,9 @@ networks:
 ```
 主上面跑 
 mysql -uroot -pJava1234!
+
+DROP USER 'slave2'@'%';
+
 CREATE USER 'slave2'@'%' IDENTIFIED WITH sha256_password BY'Password';
 GRANT REPLICATION SLAVE ON *.* TO 'slave2'@'%';
 flush privileges;
@@ -205,7 +208,12 @@ show master status;
 
 從上面跑
 mysql -uroot -pJava1234!
+
 STOP SLAVE IO_THREAD;
+
+重製slave
+reset slave;
+
 CHANGE MASTER TO MASTER_HOST='mysql-master',
 MASTER_USER='slave2',
 MASTER_PASSWORD='Password',
