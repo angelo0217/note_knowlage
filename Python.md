@@ -199,3 +199,65 @@ def test_xxxx(mocked_send_message, mocked_some_function, session):
 with pytest.raises(Exception):
     xxxx()
 ```
+# python cdc
+```python
+from pymysqlreplication import BinLogStreamReader
+from pymysqlreplication.row_event import (
+    DeleteRowsEvent,
+    UpdateRowsEvent,
+    WriteRowsEvent,
+)
+
+
+# mysql-replication = "*" 安裝此包
+#  env add PYTHONUTF8=1  windows 環境變數須加上這個
+
+def main():
+
+    MYSQL_SETTINGS = {
+        "host": "127.0.0.1",
+        "port": 3307,
+        "user": "root",
+        "passwd": "Java1234!"
+    }
+    '''
+    * server_id is your slave identifier, it should be unique.
+    * set blocking to True if you want to block and wait for the next event at
+    the end of the stream
+    * only_events will listen only to describes events 
+    '''
+    print(">>>listener start streaming to:mysql_data")
+
+    stream = BinLogStreamReader(
+        connection_settings=MYSQL_SETTINGS,
+        server_id=2,
+        blocking=True,
+        resume_stream=True,
+        filter_non_implemented_events=False,
+        only_events=[DeleteRowsEvent, WriteRowsEvent, UpdateRowsEvent],
+        only_tables=["books"],
+        log_file="mysql-bin.000013", # 若無file設定，則只會撈最新，有則從對應file後面都撈
+        log_pos=4,
+    )
+
+    for binlogevent in stream:
+        print("当前的 log_file 名称为:", stream.log_file)
+        print(">>>binlogevent: ", binlogevent.to_dict())
+        for row in binlogevent.rows:
+            print(">>> start event")
+            event = {"schema": binlogevent.schema,
+                     "table": binlogevent.table,
+                     "type": type(binlogevent).__name__,
+                     "row": row
+                     }
+            print(">>>event", event)
+
+            # binlogevent.dump()
+
+    stream.close()
+
+
+if __name__ == "__main__":
+    main()
+
+```
