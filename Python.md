@@ -199,6 +199,18 @@ def test_xxxx(mocked_send_message, mocked_some_function, session):
 with pytest.raises(Exception):
     xxxx()
 ```
+# pytest class
+```python
+@pytest.mark.usefixtures("xxxx")
+class TestSomeClass:
+
+    @patch("xxx.xxx.aaa")
+    def test_response_200(
+        self, mocked_aaa
+    ):
+        mocked_aaa.return_value = tms_truck_information
+        do_some_thing()
+```
 # python cdc
 ```python
 from pymysqlreplication import BinLogStreamReader

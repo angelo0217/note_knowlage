@@ -61,8 +61,7 @@ spec:
   selector:
     app: nginx
   type: NodePort
-Service 區段：
-
+#Service 區段：
 #apiVersion: 指定使用的 Kubernetes API 版本，這裡使用了 v1 版本。
 #kind: 資源的種類，這裡是一個 Service。
 #metadata: 定義 Service 物件的元資料。
@@ -95,8 +94,7 @@ spec:
   policyTypes:
     - Ingress
     - Egress
-NetworkPolicy 區段：
-
+#NetworkPolicy 區段：
 #apiVersion: 指定使用的 Kubernetes API 版本，這裡使用了 networking.k8s.io/v1 版本。
 #kind: 資源的種類，這裡是一個 NetworkPolicy。
 #metadata: 定義 NetworkPolicy 物件的元資料。
