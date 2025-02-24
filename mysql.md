@@ -133,6 +133,7 @@ services:
       - --collation-server=utf8mb4_unicode_ci
       - --lower_case_table_names=1
       - --server_id=1
+      - --binlog_format=ROW
       - --binlog-do-db=mydb
       - --log-bin=mysql-bin
       - --sync_binlog=1
@@ -176,6 +177,7 @@ services:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
       - --lower_case_table_names=1
+      - --binlog_format=ROW
       - --binlog-do-db=mydb
       - --server_id=2
       - --log-bin=mysql-bin
@@ -183,6 +185,10 @@ services:
       - --replicate-do-db=mydb
       - --binlog_row_metadata=FULL
       - --binlog_row_image=FULL
+      - --max_binlog_size = 1G # 單一檔案上限
+      - --expire_logs_days = 7 # 保留7天
+      #- --relay-log=mysql-relay-bin
+      #- --relay-log-index=mysql-relay-bin.index
     networks:
       - mysql-net
     logging:

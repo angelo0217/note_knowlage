@@ -14,7 +14,35 @@ path添加
   poetry 位置，已安裝時提供為主
   C:\Users\g02117\AppData\Roaming\Python\Scripts
 ```
+## Docker
+```dockerfile
+FROM python:3.9.9-slim
 
+RUN apt-get update && apt-get -y install vim
+
+WORKDIR /app
+
+RUN pip install --upgrade pip
+RUN pip install poetry==1.3.2
+
+# For pip install
+RUN mkdir /.local
+RUN chmod -R 777 /.local
+ENV PATH="/.local/bin:${PATH}"
+
+# For poetry install
+RUN mkdir /.cache
+RUN chmod -R 777 /.cache
+
+# For poetry config
+RUN mkdir /.config
+RUN chmod -R 777 /.config
+
+RUN poetry config virtualenvs.create false
+RUN poetry config cache-dir /.local
+
+CMD ["python3"]
+```
 ## List Partition
 
 ```python
