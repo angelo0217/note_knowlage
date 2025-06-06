@@ -137,5 +137,13 @@
     ```
     \\wsl.localhost\<你的發行版名稱>\home\<你的 Linux 使用者名稱>\
     ```
+### 看 wsl 的ip
+```aiexclude
+ip addr show eth0 | grep -oP 'inet \K[\d.]+'
+
+sudo apt update
+sudo apt install openssh-server
+sudo service ssh start
+```
 
 這份 Markdown 檔案涵蓋了我們討論的從安裝 WSL 到使用 Podman 啟動範例，以及找到 WSL 預設路徑的各個方面。你可以將其保存為 `.md` 檔案並在支援 Markdown 的閱讀器中查看。
