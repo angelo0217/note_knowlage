@@ -1,0 +1,118 @@
+{
+  "name": "demo1",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jira",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -60
+      ],
+      "id": "71b48d4e-f789-4344-9cfa-1564368c7c40",
+      "webhookId": "98b2e703-026c-421c-9f34-474cec18cc10"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "url": "=https://morrisonexpress.atlassian.net/rest/api/3/issue/{{$json.body.ticketId}}",
+        "options": {}
+      },
+      "name": "Get JIRA Issue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -60
+      ],
+      "id": "2c58420f-1c62-458a-a6d8-fff9102e2fd4",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "qepwjiyS1GusmpYj",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"status\": \"{{ $json.fields.statusCategory.name }}\",\n  \"assignee\": {{ $json.fields.assignee }}\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        180,
+        -60
+      ],
+      "id": "044496d9-8b45-458d-9db9-9b4a594bb6a8",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "command": "=echo \"{{ JSON.stringify($json) }}\" | /opt/venv/bin/python /app/scripts/n8n_script.py"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -60
+      ],
+      "id": "ade9f056-6f49-42d7-a96e-d76d7d4c8a0b",
+      "name": "Execute Command",
+      "alwaysOutputData": false
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get JIRA Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get JIRA Issue": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5c0ea8bc-31aa-4f95-a9dc-a4c38ab53a61",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "280177ebbb269379ad0e45a8cd3f3b34edfcc2a76cf817f7551c3c748e2c34d3"
+  },
+  "id": "mZ76QzVPpKZ8MkMu",
+  "tags": []
+}

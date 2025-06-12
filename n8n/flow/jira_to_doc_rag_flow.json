@@ -1,0 +1,401 @@
+{
+  "name": "jira_to_doc_rag_flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jira-analysis",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        220,
+        -80
+      ],
+      "id": "22a728f0-e371-47ac-9bc5-fb4e26b46c36",
+      "webhookId": "98b2e703-026c-421c-9f34-474cec18cc10"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "url": "=https://morrisonexpress.atlassian.net/rest/api/3/issue/{{$json.body.ticketId}}",
+        "options": {}
+      },
+      "name": "Get JIRA Issue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        420,
+        -80
+      ],
+      "id": "4ff22792-d096-41e6-8554-b080374c488e",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "qepwjiyS1GusmpYj",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4",
+          "mode": "list",
+          "cachedResultName": "GPT-4"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=請用繁體中文總結以下JIRA工作描述：\n描述：{{$json.descriptionText}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        900,
+        100
+      ],
+      "id": "7a5e5cd4-4c92-4345-8b39-00fe9ac612a8",
+      "name": "OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "6AxKwNjBvwOT3lFI",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractTextFromADF(adf) {\n  let text = '';\n  function recurse(node) {\n    if (node.type === 'text' && node.text) {\n      text += node.text;\n    }\n    if (Array.isArray(node.content)) {\n      node.content.forEach(recurse);\n    }\n  }\n  recurse(adf);\n  return text;\n}\nconst adf = $json.fields.description;\nconst plainText = extractTextFromADF(adf);\n// 獲取 summary 變數\nconst summary = $json.fields.summary;\n\n// 將 summary 中的所有空格替換成 \"+\" 來建立 title 變數\nconst title = summary.replace(/ /g, '+');\n\nreturn [{ json: { summary: summary, descriptionText: plainText, title: title} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        -80
+      ],
+      "id": "2fa2c1fd-e57d-486f-9244-3a45f74edb5f",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1280,
+        -80
+      ],
+      "id": "7cf81365-30f9-487a-9886-47df0ec7f101",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "https://morrisonexpress.atlassian.net/wiki/api/v2/pages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $json.summary }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic cmljaGFyZF95ZWhAbW9ycmlzb25leHByZXNzLmNvbTpBVEFUVDN4RmZHRjAxVFNWM2NfWGMtN242TEtJVzlfeEl5aTVOZk5RSEhzdDBYcXlkb25aQjAwenprVTZGTF9acUNOUG02WDJkaWpWOTRReFpBVEp4bjlFUjF5c3Jxa3p1YVdiQktUYW5QLUNTRmh6VW43enFkcVNrWWpYNlRpZjZNeHhwNk1lUjctcVpEbFVlbGM0eXo0dnlDTFNmb1VSbWVpS3NBeE5jc0MxZV9zM0dhTG9KejQ9N0YwOEQxN0I="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        -240
+      ],
+      "id": "cd85c847-4107-4cc5-9bd8-6bf1b6cec96b",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "requestMethod": "POST",
+        "url": "=https://morrisonexpress.atlassian.net/wiki/api/v2/pages",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"spaceId\": \"612008377\",\n  \"status\": \"current\",\n  \"title\": \"{{ $json.summary }}\",\n  \"parentId\": \"3506831501\",\n  \"body\": {\n    \"representation\": \"storage\",\n    \"value\": \"{{$json.message.content}}\"\n  }\n}",
+        "headerParametersJson": "{\n\"accept\": \"application/json\"\n}"
+      },
+      "id": "1dbb7f36-ca95-4c56-bdaa-fd335f2f9f88",
+      "name": "Create Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1740,
+        100
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "qepwjiyS1GusmpYj",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return { \"doc_id\": $json.results[0].id,\"doc_version\": $json.results[0].version }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1060,
+        -240
+      ],
+      "id": "81156735-bb9c-4e93-a0df-a2eabdba0fba",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "82c431eb-68e2-44ae-afdc-b794df7c4be4",
+              "leftValue": "doc_id",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1500,
+        -80
+      ],
+      "id": "1c486389-2460-4bf8-a000-5031cc008768",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://morrisonexpress.atlassian.net/wiki/api/v2/pages/{{ $json.doc_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": {{ $json.doc_id }},\n  \"spaceId\": \"612008377\",\n  \"status\": \"current\",\n  \"title\": \"{{ $json.summary }}\",\n  \"parentId\": \"3506831501\",\n  \"body\": {\n    \"representation\": \"storage\",\n    \"value\": \"{{$json.message.content}}\"\n  },\n  \"version\": {\"number\": {{$json.doc_version.number + 1}} }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1740,
+        -240
+      ],
+      "id": "b482c154-1887-4c5e-ba2e-7a0eecc02a6b",
+      "name": "Update Doc",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "qepwjiyS1GusmpYj",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "command": "=echo '{{$json.key}}:!!!!:{{$json.fields.components[0].name}}:!!!!:{{$json.message.content}}' | /opt/venv/bin/python /app/scripts/n8n_doc_script.py"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        360
+      ],
+      "id": "56bf166f-19be-43e9-ba61-c6f47a00624f",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1220,
+        360
+      ],
+      "id": "fa975c53-e4f8-4084-8989-dc948c5241eb",
+      "name": "Merge1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get JIRA Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get JIRA Issue": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "OpenAI": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update Doc",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Execute Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6941a339-fcbe-4d39-b40e-ac4966d8f4a7",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "280177ebbb269379ad0e45a8cd3f3b34edfcc2a76cf817f7551c3c748e2c34d3"
+  },
+  "id": "aiWgtHw7mFUAK8z4",
+  "tags": []
+}

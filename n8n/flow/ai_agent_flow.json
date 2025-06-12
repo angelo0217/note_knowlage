@@ -1,0 +1,658 @@
+{
+  "name": "ai agent flow",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "jira-analysis",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -180,
+        60
+      ],
+      "id": "3c08ab24-a2c9-404c-a8db-0b6f898983a3",
+      "webhookId": "98b2e703-026c-421c-9f34-474cec18cc10"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "url": "=https://morrisonexpress.atlassian.net/rest/api/3/issue/{{$json.body.ticketId}}",
+        "options": {}
+      },
+      "name": "Get JIRA Issue",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        20,
+        60
+      ],
+      "id": "f4c2027e-ef90-4b4c-93ee-f55014d72c98",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "qepwjiyS1GusmpYj",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function extractTextFromADF(adf) {\n  let text = '';\n  function recurse(node) {\n    if (node.type === 'text' && node.text) {\n      text += node.text;\n    }\n    if (Array.isArray(node.content)) {\n      node.content.forEach(recurse);\n    }\n  }\n  recurse(adf);\n  return text;\n}\nconst adf = $json.fields.description;\nconst plainText = extractTextFromADF(adf);\n// 獲取 summary 變數\nconst summary = $json.fields.summary;\n\n// 將 summary 中的所有空格替換成 \"+\" 來建立 title 變數\nconst title = summary.replace(/ /g, '+');\n\nreturn [{ json: { summary: summary, descriptionText: plainText, title: title} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        60
+      ],
+      "id": "0b786c08-8cc7-4d60-ab33-660c2c67b66c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1280,
+        60
+      ],
+      "id": "bb0e1a61-992d-48f0-a594-775dcd7d4183",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "url": "https://morrisonexpress.atlassian.net/wiki/api/v2/pages",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "title",
+              "value": "={{ $json.summary }}"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Basic cmljaGFyZF95ZWhAbW9ycmlzb25leHByZXNzLmNvbTpBVEFUVDN4RmZHRjAxVFNWM2NfWGMtN242TEtJVzlfeEl5aTVOZk5RSEhzdDBYcXlkb25aQjAwenprVTZGTF9acUNOUG02WDJkaWpWOTRReFpBVEp4bjlFUjF5c3Jxa3p1YVdiQktUYW5QLUNTRmh6VW43enFkcVNrWWpYNlRpZjZNeHhwNk1lUjctcVpEbFVlbGM0eXo0dnlDTFNmb1VSbWVpS3NBeE5jc0MxZV9zM0dhTG9KejQ9N0YwOEQxN0I="
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        660,
+        -200
+      ],
+      "id": "acc8acfd-2f2f-4805-9d62-e49c3cbf4c58",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "authentication": "basicAuth",
+        "requestMethod": "POST",
+        "url": "=https://morrisonexpress.atlassian.net/wiki/api/v2/pages",
+        "jsonParameters": true,
+        "options": {},
+        "bodyParametersJson": "={\n  \"spaceId\": \"612008377\",\n  \"status\": \"current\",\n  \"title\": \"{{ $json.summary }}\",\n  \"parentId\": \"3506831501\",\n  \"body\": {\n    \"representation\": \"storage\",\n    \"value\": \"{{$json.message.content}}\"\n  }\n}",
+        "headerParametersJson": "{\n\"accept\": \"application/json\"\n}"
+      },
+      "id": "06698853-e351-460d-b93a-a3ed846e61d4",
+      "name": "Create Page",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        140
+      ],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "qepwjiyS1GusmpYj",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return { \"doc_id\": $json.results[0].id,\"doc_version\": $json.results[0].version }"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        -200
+      ],
+      "id": "e59b958c-ff92-4cc8-9969-9f22f4309381",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "82c431eb-68e2-44ae-afdc-b794df7c4be4",
+              "leftValue": "doc_id",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1460,
+        60
+      ],
+      "id": "b85780a3-bbae-48be-9a3d-409a53389f48",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "PUT",
+        "url": "=https://morrisonexpress.atlassian.net/wiki/api/v2/pages/{{ $json.doc_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"id\": {{ $json.doc_id }},\n  \"spaceId\": \"612008377\",\n  \"status\": \"current\",\n  \"title\": \"{{ $json.summary }}\",\n  \"parentId\": \"3506831501\",\n  \"body\": {\n    \"representation\": \"storage\",\n    \"value\": \"{{$json.message.html_file.replace(/[\\r\\\\n\\n]+/g, '')}}\"\n  },\n  \"version\": {\"number\": {{$json.doc_version.number + 1}} }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1660,
+        -40
+      ],
+      "id": "60d4b02c-fe8a-43b3-bd1a-3c83d3d852cf",
+      "name": "Update Doc",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "qepwjiyS1GusmpYj",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1000,
+        440
+      ],
+      "id": "f1711457-40cf-4816-9242-603fb2b637a0",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "=請用繁體中文總結以下JIRA工作描述：\nJIRA票上描述：{{$json.chatInput}}\n幫我生成一個 html的說明檔案跟純文字內容\n回傳格式為 {\n  \"message\": \"\",\n  \"html\": \"\"\n}\n其中 message 為 一般整理回復的純文字重點 ，用來訓練rag使用的\nhtml 為整份檔案的html，用來撰寫可閱讀的文件，並上傳至Confluence 注意html內的雙引號都使用單引號，避免轉換錯誤\n注意回傳的json格式要正確，且要注意 html 在 json的formate不能導致後續步驟錯誤"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        740,
+        180
+      ],
+      "id": "540839ac-9249-4b1f-86a4-a0cafaee359b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "llama3.1:latest",
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
+      "position": [
+        440,
+        480
+      ],
+      "id": "79518faf-e2a3-4a8a-af17-a75233064352",
+      "name": "Ollama Chat Model1",
+      "notesInFlow": false,
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDG0k6rVpjrzZTi7",
+          "name": "Ollama account"
+        }
+      },
+      "notes": "請用繁體中文總結以下JIRA工作描述：\n描述：{{$json.descriptionText}}"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "86fc262e-279e-41e9-839f-551965e2d68a",
+              "name": "chatInput",
+              "value": "={{ $json.descriptionText }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        580,
+        180
+      ],
+      "id": "b01aa8ad-6348-4d4c-9b07-e5213b7da826",
+      "name": "parse to ai"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "= {\n    \"index\":0,\n    \"message\":{\n       \"role\":\"assistant\",\n       \"content\":\"{{ JSON.parse(JSON.parse($json.output.replace(/[\\r\\\\n\\n]+/g, '').toJsonString())).message }}\",\n       \"html_file\":\"{{ JSON.parse(JSON.parse($json.output.replace(/[\\r\\\\n\\n]+/g, '').toJsonString())).html }}\",\n       \"refusal\":null,\n       \"annotations\":[]\n    },\n    \"logprobs\":null,\n    \"finish_reason\":\"stop\"\n }",
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1080,
+        180
+      ],
+      "id": "84d03bb7-eaa2-4911-810f-1c67d41a8d7b",
+      "name": "parse res",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "command": "=echo '{{$json.key}}:!!!!:{{$json.fields.components[0].name}}:!!!!:{{$json.message.content}}' | /opt/venv/bin/python /app/scripts/n8n_doc_script.py"
+      },
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        640
+      ],
+      "id": "f9cb5bd5-9cea-4b48-a760-8a2ffb97bd22",
+      "name": "Execute Command"
+    },
+    {
+      "parameters": {
+        "code": {
+          "execute": {
+            "code": "const { createClient } = require(\"redis\");\nconst { RedisVectorStore } = require(\"@langchain/redis\");\n\nconst client = createClient({ url: \"redis://n8n_redis:6379\" });\nawait client.connect();\n\nconst inputData = await this.getInputData();\nconst documentLoader = await this.getInputConnectionData('ai_document', 0);\nconst embeddings = await this.getInputConnectionData('ai_embedding', 0);\n\nconst vectorStore = new RedisVectorStore(embeddings, {\n  redisClient: client,\n  indexName: \"ticket_rag_index\",\n});\n\nconst processedDocs = await documentLoader.processAll(inputData);\nawait vectorStore.addDocuments(processedDocs);\n\nawait client.disconnect();\n\nreturn [{\"json\": { \"output\": inputData } }];"
+          }
+        },
+        "inputs": {
+          "input": [
+            {
+              "type": "main",
+              "maxConnections": 1,
+              "required": true
+            },
+            {
+              "type": "ai_embedding",
+              "maxConnections": 1,
+              "required": true
+            },
+            {
+              "type": "ai_document",
+              "maxConnections": 1,
+              "required": true
+            }
+          ]
+        },
+        "outputs": {
+          "output": [
+            {
+              "type": "main"
+            }
+          ]
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.code",
+      "typeVersion": 1,
+      "position": [
+        1460,
+        440
+      ],
+      "id": "4717acf3-16a0-4cda-bde9-97bb4e05da25",
+      "name": "LangChain Code"
+    },
+    {
+      "parameters": {
+        "model": "nomic-embed-text:latest"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOllama",
+      "typeVersion": 1,
+      "position": [
+        1480,
+        640
+      ],
+      "id": "82432156-d736-4b9a-bc68-d6c6de1999d2",
+      "name": "Embeddings Ollama",
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDG0k6rVpjrzZTi7",
+          "name": "Ollama account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "deepseek/deepseek-chat:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        620,
+        480
+      ],
+      "id": "ebe95743-3e0f-47f6-89e6-c484c649f8c2",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "FzjLyA9AHi6Uf58e",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1600,
+        640
+      ],
+      "id": "37cf8f40-c0aa-40f2-b2f7-85bf3d49dc08",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "chunkSize": 300,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1640,
+        800
+      ],
+      "id": "b5649974-e817-4908-8b8b-b95166d46134",
+      "name": "Recursive Character Text Splitter"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "= {\n    \"data\": [\n      \"{{$json.key}}\",\n      \"{{$json.fields.components[0].name}}\",\n      \"{{$json.message.content}}\"\n    ]\n }",
+        "options": {
+          "dotNotation": false
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1220,
+        440
+      ],
+      "id": "d7b69ce1-e5a0-4a28-b6c2-5ba85c1f9581",
+      "name": "parse res1",
+      "alwaysOutputData": false
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get JIRA Issue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get JIRA Issue": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          },
+          {
+            "node": "parse to ai",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update Doc",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Page",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "parse res1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Chat Model1": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "parse res",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse to ai": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse res": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Ollama": {
+      "ai_embedding": [
+        [
+          {
+            "node": "LangChain Code",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "LangChain Code",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "parse res1": {
+      "main": [
+        [
+          {
+            "node": "LangChain Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "00738aea-72bb-4112-8a8d-c1c3d5aa2931",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "280177ebbb269379ad0e45a8cd3f3b34edfcc2a76cf817f7551c3c748e2c34d3"
+  },
+  "id": "Yc4zt20JnYjSQWmc",
+  "tags": []
+}
