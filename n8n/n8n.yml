@@ -5,57 +5,58 @@ services:
     image: n8n-python
     restart: always
     ports:
-      - "5678:5678" # 將 n8n 的 5678 端口映射到主機的 5678 端口
+      - "5678:5678"
     environment:
       - NODE_FUNCTION_ALLOW_EXTERNAL=*
       - N8N_PYTHON_VENV_PATH=/opt/venv
       - DB_TYPE=postgresdb
-      - DB_POSTGRESDB_HOST=postgres # 指向 postgres 服務
+      - DB_POSTGRESDB_HOST=postgres
       - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
       - DB_POSTGRESDB_USER=${POSTGRES_USER}
       - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
-      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE} # 啟用基本認證
+      - N8N_BASIC_AUTH_ACTIVE=${N8N_BASIC_AUTH_ACTIVE}
       - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
       - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
-      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE} # 設定 n8n 時區
-      - TZ=${TZ} # 設定容器時區
-      # 如果你需要啟用外部函式庫，例如 axios，可以取消註解下一行
-      # - NODE_FUNCTION_ALLOW_EXTERNAL=axios,qs
+      - GENERIC_TIMEZONE=${GENERIC_TIMEZONE}
+      - TZ=${TZ}
     volumes:
-      - n8n_data:/home/node/.n8n # 將 n8n 的資料持久化到具名 volume
+      - n8n_data:/home/node/.n8n
       - ./scripts:/app/scripts
     depends_on:
-      - postgres # 確保 postgres 服務在 n8n 之前啟動
+      - postgres
+    networks: # <--- 新增這裡
+      - my_bridge_network # <--- 將服務連接到自定義網路
 
   postgres:
-    image: postgres:16 # 使用 PostgreSQL 16
+    image: postgres:16
     restart: always
     ports:
-      - "5432:5432" # 將 PostgreSQL 的 5432 端口映射到主機的 5432 端口
+      - "5432:5432"
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
-      - postgres_data:/var/lib/postgresql/data # 將 PostgreSQL 資料持久化到具名 volume
-    healthcheck: # 健康檢查，確保資料庫已準備好
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 5s
       retries: 5
-  
+    networks: # <--- 新增這裡
+      - my_bridge_network # <--- 將服務連接到自定義網路
+
   redis:
     image: redis/redis-stack-server:7.4.0-v5
     container_name: n8n_redis
     restart: always
     ports:
-      - '6379:6379' # Redis 服務端口 (可選，通常不需要從外部訪問)
-    volumes: # <--- 新增這裡！
+      - '6379:6379'
+    volumes:
       - redis_data:/data
-    #command: redis-server --appendonly yes # 啟用 AOF 持久化，確保資料不丟失
-    # 如果要設定 Redis 密碼，請取消註解並替換為你的密碼
-    # command: redis-server --requirepass your_redis_password --appendonly yes
-    #
+    networks: # <--- 新增這裡
+      - my_bridge_network # <--- 將服務連接到自定義網路
+
   ollama:
     image: ollama/ollama:latest
     container_name: n8n_ollama
@@ -64,6 +65,8 @@ services:
     volumes:
       - ollama_data:/root/.ollama
     restart: unless-stopped
+    networks: # <--- 新增這裡
+      - my_bridge_network # <--- 將服務連接到自定義網路
 
 volumes:
   n8n_data:
@@ -71,3 +74,7 @@ volumes:
   redis_data:
   ollama_data:
     name: ollama_data
+
+networks: # <--- 新增這個區塊
+  my_bridge_network: # <--- 定義您的自定義網路名稱
+    driver: bridge # <--- 指定網路驅動為 bridge
