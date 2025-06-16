@@ -1,179 +1,327 @@
-# Docker
+# Docker 學習筆記
 
-## install
+這是一份關於 Docker 的學習筆記，涵蓋了核心概念、安裝、常用指令及設定範例。
+
+## 1. 核心概念
+
+在開始之前，先了解 Docker 的幾個核心元件：
+
+- **映像檔 (Image)**: 一個唯讀的模板，包含了執行應用程式所需的所有內容，例如程式碼、函式庫、環境變數和設定檔。映像檔是建立容器的基礎。
+- **容器 (Container)**: 映像檔的執行中實例。容器是獨立、輕量級的執行環境，可以被輕易地啟動、停止、移動和刪除。容器之間互相隔離。
+- **資料卷 (Volume)**: 用於持久化保存容器資料的機制。資料卷會繞過容器的檔案系統，直接將資料儲存在主機上，避免容器被刪除時資料遺失。
+- **倉庫 (Repository)**: 集中存放映像檔的地方。最知名的公開倉庫是 [Docker Hub](https://hub.docker.com/)。
+
+---
+
+## 2. 安裝與設定 (CentOS)
+
+### 2.1. 安裝 Docker
 
 ```shell
+# 1. 安裝所需的工具
 sudo yum install -y yum-utils device-mapper-persistent-data lvm2
 
+# 2. 新增 Docker 的軟體源
 sudo yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-sudo yum list docker-ce --showduplicates | sort -r #查看版本
-sudo yum install -y docker-ce-19.03.9-3.el7 #選擇stable版
 
-sudo systemctl enable docker
+# 3. (可選) 查看所有可用的 Docker 版本
+sudo yum list docker-ce --showduplicates | sort -r
 
-# 安裝有延遲問題，可能導致daemon.json尚未建立。
-# Update (Docker Server) 自定義daemon.json 
-cat > /etc/docker/daemon.json <<EOF
-{
-  "exec-opts": ["native.cgroupdriver=systemd"],
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m",
-    "max-file": "10"
-  },
-  "storage-driver": "overlay2"
-}
-EOF
-mkdir -p /etc/systemd/system/docker.service.d
+# 4. 安裝指定版本的 Docker (建議選擇 stable 版)
+sudo yum install -y docker-ce-19.03.9-3.el7
 
-# Restart docker
-systemctl daemon-reload
-systemctl restart docker
-systemctl enable docker.service
-
-# 啟動 
+# 5. 啟動 Docker 服務
 sudo systemctl start docker
-# 關閉
-sudo systemctl stop docker
+
+# 6. 設定開機自動啟動
+sudo systemctl enable docker
 ```
 
-## uninstall
+### 2.2. 移除 Docker
 
 ```shell
-systemctl stop docker
+# 1. 停止 Docker 服務
+sudo systemctl stop docker
 
-# Clean docker 
+# 2. 移除所有 Docker 元件 (容器、映像檔、網路、資料卷)
 yes | sudo docker system prune --all --volumes
 
-rm -rf /var/lib/docker /etc/docker
-rm -rf /var/run/docker.sock
-rm -rf /usr/bin/docker-compose
+# 3. 移除 Docker 相關套件
+yes | sudo yum remove docker-ce docker-ce-cli containerd.io
 
-# Uninstall old versions
-yes | sudo yum remove docker \
-    docker-client \
-    docker-client-latest \
-    docker-common \
-    docker-latest \
-    docker-latest-logrotate \
-    docker-logrotate \
-    docker-engine \
-    docker-ce \
-    docker-ce-cli 
+# 4. 刪除 Docker 相關目錄
+sudo rm -rf /var/lib/docker
+sudo rm -rf /var/lib/containerd
 ```
 
-## 設定root以外user，使用docker指令
+### 2.3. 使用者權限設定
 
-- sudo usermod -a -G docker albert
-
-## Volumn 預設位置
-
-- /var/lib/docker/volumes
-
-## 取IP
-
-- host.docker.internal
-
-## 清除不必要的Docker image container
-
-- yes | sudo docker system prune -a
-
-## Docker 資源使用
-
-- docker stats --all e5d1187c12d7
-- https://docs.docker.com/engine/reference/commandline/stats/
-
-## systemctl
-
-### 擴大空間
+為了避免每次執行 `docker` 指令都需要加上 `sudo`，可以將目前使用者加入 `docker` 群組。
 
 ```shell
-cat > /etc/docker/daemon.json <<EOF
-{
-  "log-driver": "json-file",
-  "log-opts": {
-    "max-size": "100m"
-  },
-  "storage-driver": "overlay2",
-  "storage-opts" :[
-      "size=50GB"
-  ]
-}
+# 將目前使用者加入 docker 群組 (albert 請替換成你的使用者名稱)
+sudo usermod -aG docker albert
+
+# 執行後需要重新登入或重開機才會生效
 ```
 
+### 2.4. 設定 Daemon (daemon.json)
+
+Docker 的核心服務設定檔位於 `/etc/docker/daemon.json`。如果檔案不存在，可以手動建立。
+
+以下是一個推薦的基礎設定範例：
+
 ```shell
+# 建立並寫入設定
+sudo cat > /etc/docker/daemon.json <<EOF
 {
-  "debug": true,
-  "experimental": true,
   "exec-opts": ["native.cgroupdriver=systemd"],
-  "metrics-addr": "10.140.0.2:9323",
-  "insecure-registries": ["java-harbor:10011"],
   "log-driver": "json-file",
   "log-opts": {
     "max-size": "100m",
     "max-file": "10"
   },
-  "storage-driver": "overlay2"
+  "storage-driver": "overlay2",
+  "registry-mirrors": [
+    "https://hub-mirror.c.163.com"
+  ]
 }
+EOF
+
+# 重新載入設定並重啟 Docker
+sudo systemctl daemon-reload
+sudo systemctl restart docker
 ```
 
-## 訪問容器
+- `exec-opts`: 配合 systemd，是 Kubernetes 的推薦設定。
+- `log-driver` & `log-opts`: 設定日誌輪替，避免日誌檔無限制增長佔滿硬碟。
+- `storage-driver`: 儲存驅動，`overlay2` 是目前推薦的選項。
+- `registry-mirrors`: 設定鏡像加速器，可大幅提升下載公開映像檔的速度。
 
-- docker run --rm -it $image_name /bin/bash
-- docker exec -it $container_name /bin/sh
+---
 
-## 顯示容器使用資源
-- docker ps -q | xargs docker stats
+## 3. 常用指令
 
-## 常用
-
-### consul
+### 3.1. 容器管理
 
 ```shell
-docker run -d --name=server1 --restart=always \
-             -p 8300:8300 \
-             -p 8301:8301 \
-             -p 8301:8301/udp \
-             -p 8302:8302/udp \
-             -p 8302:8302 \
-             -p 8400:8400 \
-             -p 8500:8500 \
-             -p 8600:8600 \
-             consul agent -server -bind=127.0.0.1 -datacenter=dc1 -bootstrap \
-             -data-dir=/tmp/data-dir -client 0.0.0.0 -ui -node=server1
+# 顯示目前正在執行的容器
+docker ps
+
+# 顯示所有容器 (包含已停止的)
+docker ps -a
+
+# 執行一個新容器 (-d: 背景執行, -p: 映射連接埠, --name: 命名)
+docker run -d -p 8080:80 --name my-web-server nginx
+
+# 停止一個容器
+docker stop my-web-server
+
+# 啟動一個已停止的容器
+docker start my-web-server
+
+# 移除一個容器 (需先停止)
+docker rm my-web-server
+
+# 強制移除一個執行中的容器
+docker rm -f my-web-server
+
+# 進入一個執行中的容器並開啟互動式終端機
+# (適合用來偵錯或查看容器內部狀態)
+docker exec -it my-web-server /bin/bash
+
+# 查看容器的日誌
+docker logs my-web-server
+
+# 持續追蹤容器的日誌
+docker logs -f my-web-server
+```
+
+### 3.2. 映像檔管理
+
+```shell
+# 顯示本機所有的映像檔
+docker images
+
+# 從倉庫下載映像檔
+docker pull nginx:latest
+
+# 移除本機的映像檔
+docker rmi nginx:latest
+
+# 移除所有未被使用的映像檔
+docker image prune -a
+```
+
+### 3.3. 系統管理
+
+```shell
+# 顯示 Docker 系統資訊
+docker info
+
+# 顯示所有容器的即時資源使用狀況
+docker stats
+
+# 移除所有已停止的容器、未使用的網路和懸空的映像檔
+docker system prune
+
+# (危險) 移除所有未使用的容器、網路、映像檔和資料卷
+yes | docker system prune -a --volumes
+```
+
+---
+
+## 4. Docker 網路
+
+Docker 提供多種網路模式，讓容器能與外部世界或其他容器溝通。預設情況下，Docker 會建立一個名為 `bridge` 的虛擬網路。
+
+### 4.1. Bridge Mode (橋接模式)
+
+- **這是 Docker 的預設網路模式。**
+- Docker 會建立一個私有的內部網路，所有在此網路中的容器都可以透過 IP 位址互相通訊。
+- 如果要讓外部存取容器的服務，需要透過 `-p` 或 `-P` 參數將容器的連接埠映射到主機上。
+- **優點**: 容器之間互相隔離，安全性較高。
+- **缺點**: 網路效能相較於 Host 模式稍差，因為需要經過 NAT (網路位址轉換)。
+
+```shell
+# 執行一個使用 bridge 模式的容器 (預設行為)
+# 將主機的 8080 port 映射到容器的 80 port
+docker run -d -p 8080:80 --name web_bridge nginx
+```
+
+### 4.2. Host Mode (主機模式)
+
+- 容器不會擁有自己獨立的網路命名空間，而是直接共享主機的網路。
+- 容器會直接使用主機的 IP 位址和連接埠，因此不需要進行連接埠映射。
+- **優點**: 網路效能最佳，因為它移除了 NAT 的環節。
+- **缺點**: 安全性較低，因為容器直接暴露在主機網路上，且可能與主機上的服務產生連接埠衝突。
+
+```shell
+# 執行一個使用 host 模式的容器
+# 容器內的應用程式可以直接監聽主機的 80 port
+docker run -d --network=host --name web_host nginx
+```
+
+### 4.3. None Mode (無網路模式)
+
+- 容器擁有自己的網路命名空間，但不會進行任何網路設定。
+- 容器內只有一個 `lo` (loopback) 網路介面，無法與外部或其他容器通訊。
+- **適用情境**: 適用於只需要處理資料而不需要網路連線的任務。
+
+```shell
+# 執行一個沒有網路的容器
+docker run -it --network=none --name no_net_container busybox
+```
+
+### 4.4. 網路相關指令
+
+```shell
+# 列出所有網路
+docker network ls
+
+# 建立一個自訂的 bridge 網路
+docker network create my-custom-network
+
+# 查看特定網路的詳細資訊
+docker network inspect my-custom-network
+
+# 讓容器連接到指定的網路
+docker network connect my-custom-network web_bridge
+```
+
+---
+
+## 5. Dockerfile 與映像檔
+
+`Dockerfile` 是一個用來建構映像檔的腳本檔案。
+
+```dockerfile
+# Dockerfile 範例
+FROM python:3.8-slim-buster
+
+WORKDIR /app
+
+COPY requirements.txt requirements.txt
+RUN pip3 install -r requirements.txt
+
+COPY . .
+
+CMD [ "python3", "-m" , "flask", "run", "--host=0.0.0.0"]
+```
+
+### 5.1. 建構與匯出
+
+```shell
+# 從 Dockerfile 建構映像檔
+docker build -t my-python-app .
+
+# 將映像檔匯出成 tar 檔 (方便在沒有網路的環境中部署)
+docker save -o my-python-app.tar my-python-app:latest
+
+# 從 tar 檔載入映像檔
+docker load -i my-python-app.tar
+```
+
+---
+
+## 6. Docker Compose
+
+`Docker Compose` 是一個用來定義和執行多容器 Docker 應用程式的工具。透過一個 `docker-compose.yml` 檔案，就可以設定所有應用程式的服務。
+
+### 6.1. 常用指令
+
+```shell
+# 根據 docker-compose.yml 啟動所有服務 (背景執行)
+docker-compose up -d
+
+# 停止並移除所有服務、網路、資料卷
+docker-compose down --volumes
+
+# 完整重建：停止並移除舊的，然後重新建構並啟動
+docker-compose down --volumes --remove-orphans && docker-compose up -d --build
+```
+
+---
+
+## 7. 常用服務範例
+
+### Portainer (圖形化管理介面)
+
+```shell
+docker run -d -p 9000:9000 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce
 ```
 
 ### Redis
 
 ```shell
-docker run --name redis-lab -p 6379:6379 -d redis
+docker run -d -p 6379:6379 --name redis-lab --restart=always redis
 ```
 
-### Mq
+### RabbitMQ
 
 ```shell
-docker run --name local-mq -p 5672:5672 -p 15672:15672 --restart=always -d rabbitmq:3.8.3-management
+docker run -d -p 5672:5672 -p 15672:15672 --name local-mq --restart=always rabbitmq:3.8-management
 ```
 
-### portainer
+### Consul
 
 ```shell
-docker run -d -p 9000:9000 --restart=always --name portainer -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer
+docker run -d --name=consul-server -p 8500:8500 --restart=always consul agent -server -bootstrap-expect=1 -ui -data-dir=/consul/data -client=0.0.0.0
 ```
 
-# save image for Containerd
+---
 
-```shell
-docker save -o demo-spring.tar demo-spring:0.0.1
-```
-# 完整重建
-```shell
- docker-compose -f install.yml down --volumes --remove-orphans && docker-compose -f install.yml up -d --build
-```
+## 8. 進階設定 (daemon.json 參考)
 
-# Docker [備忘錄](https://mp.weixin.qq.com/s/iquAB8g5zyb8A2ReiQ3RSQ)
+以下是一些 `daemon.json` 中常用選項的說明。完整的選項清單請參考 [官方文件](https://docs.docker.com/engine/reference/commandline/dockerd/)。
 
-## daemon
+- `debug`: `true` / `false` - 啟用除錯模式。
+- `hosts`: `[]` - 綁定 Docker 服務監聽的地址，例如 `["tcp://0.0.0.0:2375", "unix:///var/run/docker.sock"]`。
+- `log-level`: `"info"` - 設定日誌等級 (debug, info, warn, error, fatal)。
+- `insecure-registries`: `[]` - 設定允許使用 HTTP 連線的私有倉庫地址。
+- `registry-mirrors`: `[]` - 設定倉庫鏡像，加速映像檔下載。
+- `data-root`: `"/var/lib/docker"` - 更改 Docker 的資料儲存根目錄。
+- `storage-opts`: `[]` - 儲存驅動的相關選項，例如 `["size=50GB"]`。
 
 ```json
 {
@@ -302,9 +450,3 @@ docker save -o demo-spring.tar demo-spring:0.0.1
 }
 
 ```
-
-### docker container ping
-```shell
-docker exect -it {container name 1} ping {container name 2}
-```
-### [container ping install](https://blog.csdn.net/qq_37960603/article/details/110294270)
