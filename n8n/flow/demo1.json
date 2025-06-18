@@ -3,101 +3,157 @@
   "nodes": [
     {
       "parameters": {
-        "httpMethod": "POST",
-        "path": "jira",
         "options": {}
       },
-      "name": "Webhook",
-      "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
       "position": [
-        -260,
-        -60
+        -460,
+        -100
       ],
-      "id": "71b48d4e-f789-4344-9cfa-1564368c7c40",
-      "webhookId": "98b2e703-026c-421c-9f34-474cec18cc10"
+      "id": "eedffdb5-f381-4a13-aa76-ee9fd804408e",
+      "name": "When chat message received",
+      "webhookId": "03caa5cc-5dde-4255-b170-7006251f8624"
     },
     {
       "parameters": {
-        "authentication": "basicAuth",
-        "url": "=https://morrisonexpress.atlassian.net/rest/api/3/issue/{{$json.body.ticketId}}",
         "options": {}
       },
-      "name": "Get JIRA Issue",
-      "type": "n8n-nodes-base.httpRequest",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -100
+      ],
+      "id": "29cde8a0-af44-4731-85cd-a9a27f43d396",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "qwen/qwq-32b:free",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
       "typeVersion": 1,
       "position": [
-        -40,
-        -60
+        -440,
+        120
       ],
-      "id": "2c58420f-1c62-458a-a6d8-fff9102e2fd4",
+      "id": "52c56e23-5327-44c1-9504-7b551a48188e",
+      "name": "OpenRouter Chat Model",
       "credentials": {
-        "httpBasicAuth": {
-          "id": "qepwjiyS1GusmpYj",
-          "name": "Unnamed credential"
+        "openRouterApi": {
+          "id": "FzjLyA9AHi6Uf58e",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        -140,
+        160
+      ],
+      "id": "724e5ee8-b8a4-45ca-a7e7-4e7559a4d629",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "OzTdI2UbBkUaJTUB",
+          "name": "Redis DB1"
         }
       }
     },
     {
       "parameters": {
-        "mode": "raw",
-        "jsonOutput": "={\n  \"status\": \"{{ $json.fields.statusCategory.name }}\",\n  \"assignee\": {{ $json.fields.assignee }}\n}",
+        "model": "llama3.1:latest",
         "options": {}
       },
-      "type": "n8n-nodes-base.set",
-      "typeVersion": 3.4,
+      "type": "@n8n/n8n-nodes-langchain.lmChatOllama",
+      "typeVersion": 1,
       "position": [
-        180,
-        -60
+        -320,
+        140
       ],
-      "id": "044496d9-8b45-458d-9db9-9b4a594bb6a8",
-      "name": "Edit Fields"
+      "id": "a53f1418-1d23-4c54-b493-78b453c93b18",
+      "name": "Ollama Chat Model",
+      "credentials": {
+        "ollamaApi": {
+          "id": "bDG0k6rVpjrzZTi7",
+          "name": "Ollama account"
+        }
+      }
     },
     {
       "parameters": {
-        "command": "=echo \"{{ JSON.stringify($json) }}\" | /opt/venv/bin/python /app/scripts/n8n_script.py"
+        "sseEndpoint": "http://172.30.31.59:8082/sse",
+        "include": "selected",
+        "includeTools": [
+          "list_tables",
+          "insert_data",
+          "get_table_structure",
+          "execute_sql",
+          "update_data",
+          "delete_data"
+        ]
       },
-      "type": "n8n-nodes-base.executeCommand",
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
       "typeVersion": 1,
       "position": [
-        400,
-        -60
+        0,
+        140
       ],
-      "id": "ade9f056-6f49-42d7-a96e-d76d7d4c8a0b",
-      "name": "Execute Command",
-      "alwaysOutputData": false
+      "id": "db7b0d24-bff9-4450-a468-a2986f1cd82b",
+      "name": "sqlite mcp"
     }
   ],
   "pinData": {},
   "connections": {
-    "Webhook": {
+    "When chat message received": {
       "main": [
         [
           {
-            "node": "Get JIRA Issue",
+            "node": "AI Agent",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get JIRA Issue": {
-      "main": [
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
         [
           {
-            "node": "Edit Fields",
-            "type": "main",
+            "node": "AI Agent",
+            "type": "ai_memory",
             "index": 0
           }
         ]
       ]
     },
-    "Edit Fields": {
-      "main": [
+    "Ollama Chat Model": {
+      "ai_languageModel": [
         [
           {
-            "node": "Execute Command",
-            "type": "main",
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "sqlite mcp": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
             "index": 0
           }
         ]
@@ -108,7 +164,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "5c0ea8bc-31aa-4f95-a9dc-a4c38ab53a61",
+  "versionId": "e15b88a4-6b9c-4c91-a990-0fed55a232b7",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "280177ebbb269379ad0e45a8cd3f3b34edfcc2a76cf817f7551c3c748e2c34d3"
