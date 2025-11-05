@@ -301,3 +301,22 @@ if __name__ == "__main__":
     main()
 
 ```
+## ruff install
+## 🚀 方法二：使用 pipx (隔離環境的最佳實務)
+
+如果你希望將 Ruff 作為一個「全域工具」使用，但又不希望它污染你各個專案的 Python 環境，那麼使用 `pipx` 是最好的方法。`pipx` 會將 Ruff 安裝在一個獨立的環境中。
+
+### 1. (如果尚未安裝) 先安裝 `pipx`
+
+```bash
+py -m pip install pipx
+py -m pipx ensurepath
+pipx install ruff
+ruff --version
+
+# 檢查而已
+ruff check --fix .
+# 這個才會轉換格式
+ruff format .
+ruff check . --show-settings
+```
