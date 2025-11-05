@@ -312,6 +312,10 @@ if __name__ == "__main__":
 py -m pip install pipx
 py -m pipx ensurepath
 pipx install ruff
+pipx install ruff==[您要的版本號]
+pipx install ruff==0.12.0
+pipx uninstall ruff
+pipx upgrade ruff
 ruff --version
 
 # 檢查而已
