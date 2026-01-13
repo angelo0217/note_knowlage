@@ -1,0 +1,11 @@
+將 exe 放在特定目錄下像我是放在 c:\tools
+設定環境變數 DIRENV_CONFIG=c:\tools
+
+在Path的環境變數還要添加
+%DIRENV_CONFIG%
+
+啟動 git bash
+vi ~/.bashrc 加入下面這行
+eval "$(direnv hook bash)"
+
+若沒設定 bashrc 就每次使用都要先用 eval "$(direnv hook bash)"
